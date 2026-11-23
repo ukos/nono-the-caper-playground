@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>THE CAPER — prototype v0.3</title>
+<title>THE CAPER — prototype v0.4</title>
 <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
 <link rel="apple-touch-icon" sizes="180x180" href="assets/icon-180.png">
 <link rel="manifest" href="manifest.webmanifest">
@@ -16,6 +16,8 @@
   body{margin:0;background:#060b12;color:var(--ink);font-family:"Hiragino Kaku Gothic ProN",system-ui,sans-serif;display:flex;justify-content:center}
   #app{width:min(96vw,760px);padding:10px 10px 28px}
   h1,h2{font-family:ui-monospace,Menlo,monospace;letter-spacing:.04em}
+  h2{font-size:19px;line-height:1.5}
+  .howto{border-color:#3d5a76;background:#0e2032;font-size:14px;line-height:1.65}
   .card{background:var(--navy2);border:2px solid #2b435c;border-radius:10px;padding:14px;margin:10px 0}
   .gold{color:var(--brass2)} .mut{color:var(--mut)} .red{color:var(--red)} .teal{color:var(--teal)}
   button{background:#1d3850;color:var(--ink);border:2px solid var(--brass);border-radius:8px;padding:10px 14px;font-size:16px;cursor:pointer;margin:4px}
@@ -43,7 +45,7 @@
   .cond{font-family:ui-monospace,monospace;font-size:14px;margin:4px 0}
   .ok{color:var(--teal)} .ng{color:var(--red)}
   .nodes{position:relative;height:230px;background:#0a141f;border:1px solid #2b435c;border-radius:8px}
-  .node{position:absolute;width:74px;padding:6px 2px;font-size:12px;text-align:center;background:#1d3850;border:2px solid #7f95ab;border-radius:8px;cursor:pointer}
+  .node{position:absolute;width:68px;transform:translateX(-50%);padding:6px 2px;font-size:12px;text-align:center;background:#1d3850;border:2px solid #7f95ab;border-radius:8px;cursor:pointer}
   .node.sel{border-color:var(--brass);background:#4a3a14}
   svg.routes{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
   .big{font-size:19px;line-height:1.7}
@@ -59,7 +61,7 @@
     <div class="card" style="text-align:center">
       <div class="big">世界が壊れる前に盗め！</div>
       <button class="primary" onclick="go('scr-brief')">ミッション開始</button>
-      <div class="ver">prototype v0.3 / M1「中央銀行の夜」／ SECOND 本番絵（シートA）組み込み済み／ アプリアイコン設定済み</div>
+      <div class="ver">prototype v0.4 / M1「中央銀行の夜」／ SECOND 本番絵（シートA）組み込み済み／ アプリアイコン設定済み</div>
     </div>
   </section>
 
@@ -90,6 +92,7 @@
   <!-- RECON A -->
   <section id="scr-a" class="screen">
     <h2>A. 情報収集 — 候補 <span class="gold" id="a-cand">8</span> 件 / 残り質問 <span class="gold" id="a-left">3</span> 回</h2>
+    <div class="card howto"><b>遊び方（情報収集パズル）</b>： 今夜の体制は、8通りの候補のうちのどれか1つ。質問は3回までで、答えが返るたびに候補が絞られていく。候補を1件に特定できればクリア。質問ごとに得られる情報の量が違うので、「その答えで候補がどう分かれるか」を考えてから選ぶのが、このゲームの遊び方。</div>
     <div class="card" id="a-log">情報屋「聞きたいことは3つまでだ。よく選べ。」</div>
     <div id="a-qs"></div>
     <button onclick="go('scr-recon')">下見ハブへ戻る</button>
@@ -97,7 +100,8 @@
 
   <!-- RECON B -->
   <section id="scr-b" class="screen">
-    <h2>B. 経路設計 — <span id="b-phase">侵入路： P（駐車場）から V（金庫前）へ</span></h2>
+    <h2>B. 経路設計 — <span id="b-phase">侵入路 P → V</span></h2>
+    <div class="card howto"><b>遊び方（経路設計ゲーム）</b>： 地点がノード、地点をつなぐ道が辺。つながっている地点を順にタップして、P（駐車場）から V（金庫前）まで道をつなぐ。各辺の数字はコストで、道のコスト合計がそのまま実行フェーズの所要手数になる。合計が小さい道ほど良い道。V に着くと侵入路が確定し、続いて脱出路 V → X（非常口）を作る。</div>
     <div class="nodes" id="b-nodes"><svg class="routes" id="b-svg"></svg></div>
     <div class="card" id="b-info">ノードを順にタップして道をつなぐ。辺のコスト合計がそのまま実行の所要手数になる。</div>
     <button onclick="bUndo()">1つ戻す</button>
@@ -114,6 +118,7 @@
       <span>部屋: <b id="hud-room">1</b></span>
       <span id="hud-info" class="teal"></span>
     </div>
+    <div class="card howto" id="ex-howto"></div>
     <div class="track" id="track"></div>
     <div class="card" id="ex-msg"></div>
     <div id="ex-panel"></div>
@@ -206,7 +211,7 @@ function askA(id){const q=A_QS.find(x=>x.id===id);aUsed.push(id);aLeft--;
  if(aLeft<=0){S.reconCost+=1;$('a-log').innerHTML+='<br><span class="red">特定できなかった。調査コスト+1（開始警戒度に加算）。もう一度挑める。</span>';syncRecon();return;}
  renderA();}
 // ---------- Recon B ----------
-const B_NODES={P:[4,150],H:[26,150],U:[26,40],L:[52,150],V:[74,40],X:[90,150]};
+const B_NODES={P:[11,150],H:[32,150],U:[32,40],L:[54,150],V:[74,40],X:[89,150]};
 const B_EDGES={'P-H':[2,'低'],'H-U':[2,'低'],'H-L':[3,'高'],'U-V':[3,'低'],'L-V':[2,'高'],'V-X':[3,'中'],'H-X':[4,'中']};
 let bPath=['P'],bPhase=1,bIn=null;
 function edgeKey(a,b){return B_EDGES[a+'-'+b]?a+'-'+b:(B_EDGES[b+'-'+a]?b+'-'+a:null);}
@@ -214,9 +219,9 @@ function startB(){bPath=['P'];bPhase=1;bIn=null;renderB();go('scr-b');}
 function renderB(){const wrap=$('b-nodes');wrap.querySelectorAll('.node').forEach(n=>n.remove());
  for(const k in B_NODES){const d=document.createElement('div');d.className='node'+(bPath.includes(k)?' sel':'');d.style.left=B_NODES[k][0]+'%';d.style.top=B_NODES[k][1]+'px';d.textContent=k;d.onclick=()=>tapNode(k);wrap.appendChild(d);}
  const svg=$('b-svg');let lines='';
- const draw=(path,col)=>{for(let i=0;i<path.length-1;i++){const a=B_NODES[path[i]],b=B_NODES[path[i+1]];lines+=`<line x1="${a[0]+5}%" y1="${a[1]+16}" x2="${b[0]+5}%" y2="${b[1]+16}" stroke="${col}" stroke-width="3"/>`;}};
+ const draw=(path,col)=>{for(let i=0;i<path.length-1;i++){const a=B_NODES[path[i]],b=B_NODES[path[i+1]];lines+=`<line x1="${a[0]}%" y1="${a[1]+16}" x2="${b[0]}%" y2="${b[1]+16}" stroke="${col}" stroke-width="3"/>`;}};
  if(bIn)draw(bIn,'#7fd4c1');draw(bPath,'#d9a441');svg.innerHTML=lines;
- $('b-phase').textContent=bPhase===1?'侵入路： P（駐車場）から V（金庫前）へ':'脱出路： V（金庫前）から X（非常口）へ';
+ $('b-phase').textContent=bPhase===1?'侵入路 P → V':'脱出路 V → X';
  let cost=0;for(let i=0;i<bPath.length-1;i++){const e=edgeKey(bPath[i],bPath[i+1]);if(e)cost+=B_EDGES[e][0];}
  $('b-info').textContent='現在の道： '+bPath.join(' → ')+'（コスト '+cost+'）';}
 function tapNode(k){const last=bPath[bPath.length-1];if(k===last)return;
@@ -258,6 +263,8 @@ function renderRoom(msg){const t=$('track');const w=ROOM_W[S.room];let h='<div c
  $('hud-alert').textContent=S.alert;$('hud-steps').textContent=S.steps;
  if(msg)$('ex-msg').innerHTML=msg;
  $('ex-title').textContent='実行フェーズ — '+(S.room===1?'部屋1：配電室':S.room===2?'部屋2：金庫前通路':'部屋3：金庫')+(S.escape?'（脱出）':'');
+ const HOWTO={1:'<b>遊び方（条件充足パズル）</b>： コンソールに近づいて「調べる／操作」を押すと、3色の鍵の条件文が出る。すべての条件を同時に満たす順序で鍵を選ぶゲーム。順序を間違えると警戒度+1。',2:'<b>遊び方（巡回読み）</b>： 1手動くごとに警備員も1歩進む。赤い範囲が警備の視界で、その中に入ると警戒度+2で部屋の入口に戻される。柱のあるマスは陰になっていて見つからない。警備の動きを数えながら進むゲーム。',3:'<b>遊び方（操作列パズル）</b>： 歯車盤に近づいて操作する。各レバーは2つの歯車を同時に1目盛り進める。3つの歯車の数字を目標にそろえるゲームで、操作の順序と回数が大事。'};
+ $('ex-howto').innerHTML=HOWTO[S.room]+(S.escape&&S.room===2?' 脱出時は巡回の位相が往路と逆になる。':'');
  $('ex-panel').innerHTML='';}
 function pushHist(){S.hist.push(JSON.stringify({px:S.px,gs:S.guardStep,steps:S.steps,alert:S.alert,gears:S.gears}));if(S.hist.length>60)S.hist.shift();}
 function undo(){const s=S.hist.pop();if(!s){$('ex-msg').innerHTML='これ以上戻れない。';return;}
