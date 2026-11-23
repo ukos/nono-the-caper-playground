@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>THE CAPER — prototype v0.10</title>
+<title>THE CAPER — prototype v0.11</title>
 <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
 <link rel="apple-touch-icon" sizes="180x180" href="assets/icon-180.png">
 <link rel="manifest" href="manifest.webmanifest">
@@ -53,6 +53,7 @@
   svg.routes{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1}
   #b-plan{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
   .node{z-index:2}
+  .node.off{opacity:.35;filter:saturate(.35);cursor:not-allowed}
   .big{font-size:19px;line-height:1.7}
   .ver{text-align:right;color:var(--mut);font-size:12px}
 </style>
@@ -66,7 +67,7 @@
     <div class="card" style="text-align:center">
       <div class="big">世界が壊れる前に盗め！</div>
       <button class="primary" onclick="go('scr-brief')">ミッション開始</button>
-      <div class="ver">prototype v0.10 / M1「中央銀行の夜」／ SECOND 本番絵（シートA）組み込み済み／ アプリアイコン設定済み</div>
+      <div class="ver">prototype v0.11 / M1「中央銀行の夜」／ SECOND 本番絵（シートA）組み込み済み／ アプリアイコン設定済み</div>
     </div>
   </section>
 
@@ -106,7 +107,7 @@
   <!-- RECON B -->
   <section id="scr-b" class="screen">
     <h2>B. 経路設計 — <span id="b-phase">侵入路 P → V</span></h2>
-    <div class="card howto"><b>遊び方（経路設計ゲーム）</b><br> P（駐車場）から V（金庫前）へ、続いて V から X（非常口）へ、<b>コスト合計ができるだけ小さい道</b>をつなぐこと。コスト合計は実行フェーズの所要手数になるので、小さいほど有利。<br> 進めるのは<b>線でつながっている地点の間だけ</b>。画面の見た目で近くや斜めにあっても、線がなければ通れない（線の有無がすべて）。線のそばの数字がその道のコスト。同じ地点は2度通らない。間違えたら「1つ戻す」で1手戻れる。<br>赤いチップ（🧱耐火壁・階違い・通路なし等）のある間は、物理的に通れない場所。</div>
+    <div class="card howto"><b>遊び方（経路設計ゲーム）</b><br> P（駐車場）から V（金庫前）へ、続いて V から X（非常口）へ、<b>コスト合計ができるだけ小さい道</b>をつなぐこと。コスト合計は実行フェーズの所要手数になるので、小さいほど有利。<br> 進めるのは<b>線でつながっている地点の間だけ</b>。画面の見た目で近くや斜めにあっても、線がなければ通れない（線の有無がすべて）。線のそばの数字がその道のコスト。同じ地点は2度通らない。間違えたら「1つ戻す」で1手戻れる。<br>侵入路は脱出口（X）を通らない。脱出路は侵入口（P）を通らない。相手フェーズの端点は薄く表示され、選べない。<br>赤いチップ（🧱耐火壁・階違い・通路なし等）のある間は、物理的に通れない場所。</div>
     <div class="nodes" id="b-nodes"><svg id="b-plan" viewBox="0 0 100 238" preserveAspectRatio="none">
   <rect x="0" y="0" width="100" height="238" fill="#0b1826"/>
   <g stroke="#1d3850" stroke-width="0.4">
@@ -262,7 +263,7 @@ function edgeKey(a,b){return B_EDGES[a+'-'+b]?a+'-'+b:(B_EDGES[b+'-'+a]?b+'-'+a:
 function startB(){bPath=['P'];bPhase=1;bIn=null;renderB();go('scr-b');}
 function renderB(){const wrap=$('b-nodes');wrap.querySelectorAll('.node').forEach(n=>n.remove());wrap.querySelectorAll('.costchip').forEach(n=>n.remove());wrap.querySelectorAll('.blockchip').forEach(n=>n.remove());
  const BW=wrap.clientWidth||354;const px=v=>Math.round(v/100*BW);
- for(const k in B_NODES){const d=document.createElement('div');d.className='node'+(bPath.includes(k)?' sel':'');d.style.left=B_NODES[k][0]+'%';d.style.top=B_NODES[k][1]+'px';d.innerHTML='<b>'+k+'</b><div class="nname">'+B_NAMES[k]+'</div>';d.onclick=()=>tapNode(k);wrap.appendChild(d);}
+ for(const k in B_NODES){const d=document.createElement('div');d.className='node'+(bPath.includes(k)?' sel':'')+(((bPhase===1&&k==='X')||(bPhase===2&&k==='P'))?' off':'');d.style.left=B_NODES[k][0]+'%';d.style.top=B_NODES[k][1]+'px';d.innerHTML='<b>'+k+'</b><div class="nname">'+B_NAMES[k]+'</div>';d.onclick=()=>tapNode(k);wrap.appendChild(d);}
  const COST_POS={'P-H':[21.5,204],'H-U':[32,115],'H-L':[43,204],'U-V':[53,60],'L-V':[64,115],'V-X':[81.5,115],'H-X':[60.5,212]};
  const BLOCKERS=[['U-L','🧱 耐火壁',48,124],['P-U','階違い',18,106],['H-V','直通なし',52,94],['L-X','🚧 通路なし',71.5,146]];
  for(const bk of BLOCKERS){const c=document.createElement('div');c.className='blockchip';c.style.left=bk[2]+'%';c.style.top=bk[3]+'px';c.textContent=bk[1];wrap.appendChild(c);}
@@ -280,6 +281,8 @@ else{lines+=`<line x1="${a[0]}%" y1="${a[1]+20}" x2="${b[0]}%" y2="${b[1]+20}" s
  let cost=0;for(let i=0;i<bPath.length-1;i++){const e=edgeKey(bPath[i],bPath[i+1]);if(e)cost+=B_EDGES[e][0];}
  $('b-info').textContent='現在の道： '+bPath.join(' → ')+'（コスト '+cost+'）';}
 function tapNode(k){const last=bPath[bPath.length-1];if(k===last)return;
+ if(bPhase===1&&k==='X'){$('b-info').innerHTML='<span class="red">X（非常口）は脱出口。侵入路は脱出口を通らない。脱出路は V（金庫前）に着いてから改めて設計する。</span>';return;}
+ if(bPhase===2&&k==='P'){$('b-info').innerHTML='<span class="red">P（地下駐車場）は侵入口。脱出路は侵入口を通らない。</span>';return;}
  if(!edgeKey(last,k)){const r=noEdgeReason(last,k);$('b-info').innerHTML=`<span class="red">${last}（${B_NAMES[last]}）と ${k}（${B_NAMES[k]}）はつながっていない。${r?' '+r+'。':''}</span>`;return;}
  if(bPath.includes(k)){$('b-info').innerHTML=`<span class="red">${k} はすでに通っている。道は同じ地点を2度通らない（戻りたいときは「1つ戻す」）。</span>`;return;}
  bPath.push(k);
