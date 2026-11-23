@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>THE CAPER — prototype v0.11</title>
+<title>THE CAPER — prototype v0.12</title>
 <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
 <link rel="apple-touch-icon" sizes="180x180" href="assets/icon-180.png">
 <link rel="manifest" href="manifest.webmanifest">
@@ -54,6 +54,7 @@
   #b-plan{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
   .node{z-index:2}
   .node.off{opacity:.35;filter:saturate(.35);cursor:not-allowed}
+  .planlabel{position:absolute;z-index:0;pointer-events:none;font-weight:700;letter-spacing:.06em}
   .big{font-size:19px;line-height:1.7}
   .ver{text-align:right;color:var(--mut);font-size:12px}
 </style>
@@ -67,7 +68,7 @@
     <div class="card" style="text-align:center">
       <div class="big">世界が壊れる前に盗め！</div>
       <button class="primary" onclick="go('scr-brief')">ミッション開始</button>
-      <div class="ver">prototype v0.11 / M1「中央銀行の夜」／ SECOND 本番絵（シートA）組み込み済み／ アプリアイコン設定済み</div>
+      <div class="ver">prototype v0.12 / M1「中央銀行の夜」／ SECOND 本番絵（シートA）組み込み済み／ アプリアイコン設定済み</div>
     </div>
   </section>
 
@@ -80,6 +81,11 @@
       計画書を盗み出せ。WATCH が事前に公表させれば、危機は回避できる。<br>
       <span class="mut">――世界はまだ、何も知らない。</span>
     </div>
+    <div class="card"><b>このゲームのルール</b><br>
+    あなたはスパイ <b>SECOND</b>。標的を盗み、脱出する<b>潜入パズル</b>です。<br>
+    ・<b>下見</b>（A 情報収集／B 経路設計）で計画を立て、<b>実行</b>フェーズで1手ずつ進みます。下見のうち1つ以上クリアすると実行を開始できます。<br>
+    ・<b>B（経路設計）</b>：侵入路（P→V）と脱出路（V→X）を、<b>コスト合計が最小</b>になるようにつなぎます。コストは実行フェーズの所要手数になります。<br>
+    ・<b>警戒度</b>が上限（6）に達すると、その部屋から仕切り直し。下見に手数をかけるほど開始時の警戒度が上がります。</div>
     <button class="primary" onclick="go('scr-recon')">下見フェーズへ</button>
   </section>
 
@@ -117,34 +123,34 @@
   <!-- parking P (B2F) -->
   <rect x="1" y="126" width="20" height="88" fill="rgba(127,212,193,0.06)" stroke="#3d5a76" stroke-width="0.7"/>
   <g stroke="#33506b" stroke-width="0.5"><line x1="6" y1="196" x2="6" y2="212"/><line x1="11" y1="196" x2="11" y2="212"/><line x1="16" y1="196" x2="16" y2="212"/></g>
-  <text x="3" y="140" fill="#7fd4c1" font-size="6.5" font-weight="700">B2F</text>
+  
   <!-- corridor H + stairs -->
   <rect x="21" y="148" width="23" height="44" fill="#12283d"/>
   <g stroke="#7fd4c1" stroke-width="0.7"><line x1="23" y1="158" x2="27" y2="158"/><line x1="23" y1="154" x2="27" y2="154"/><line x1="23" y1="150" x2="27" y2="150"/></g>
-  <text x="58" y="140" fill="#93a7ba" font-size="6.5" font-weight="700">B1F</text>
+  
   <!-- electrical room U -->
   <rect x="22" y="16" width="20" height="88" fill="rgba(217,164,65,0.05)" stroke="#4b647f" stroke-width="0.7"/>
-  <text x="40.5" y="28" fill="#d9a441" font-size="8" text-anchor="end">&#9889;</text>
+  
   <rect x="28.5" y="104" width="7" height="44" fill="#12283d"/>
   <!-- corridor U-V -->
   <rect x="42" y="40" width="22" height="40" fill="#12283d"/>
   <!-- vault V: double thick walls -->
   <rect x="64" y="16" width="20" height="88" fill="rgba(217,164,65,0.08)" stroke="#d9a441" stroke-width="1.6"/>
   <rect x="66" y="20" width="16" height="80" fill="none" stroke="#d9a441" stroke-width="0.7"/>
-  <text x="82.5" y="27" fill="#d9a441" font-size="5" font-weight="700" text-anchor="end">VAULT</text>
+  
   <!-- lobby back L -->
   <rect x="44" y="126" width="20" height="88" fill="rgba(127,212,193,0.04)" stroke="#4b647f" stroke-width="0.7"/>
   <!-- emergency exit X -->
   <rect x="84" y="126" width="15" height="88" fill="rgba(255,81,71,0.05)" stroke="#4b647f" stroke-width="0.7"/>
   <g stroke="#ff8a80" stroke-width="0.6"><line x1="86" y1="200" x2="97" y2="200"/><line x1="86" y1="204" x2="97" y2="204"/><line x1="86" y1="208" x2="97" y2="208"/></g>
-  <text x="97" y="140" fill="#ff8a80" font-size="5.5" font-weight="700" text-anchor="end">EXIT</text>
+  
   <!-- fire wall between U/L (the blocker) -->
   <rect x="41" y="112" width="23" height="2.4" fill="#8a4b32"/><line x1="41" y1="113.2" x2="64" y2="113.2" stroke="#c97b52" stroke-width="0.5"/><line x1="44" y1="158" x2="44" y2="182" stroke="#0d1b2a" stroke-width="1.8"/>
   <!-- maintenance tunnel H-X -->
   <path d="M 32 170 Q 60.5 244 89 170" fill="none" stroke="#33506b" stroke-width="9" opacity="0.35"/>
   <path d="M 32 170 Q 60.5 244 89 170" fill="none" stroke="#4b647f" stroke-width="0.7" stroke-dasharray="3 2"/>
-  <text x="60.5" y="228" fill="#7f95ab" font-size="5" text-anchor="middle">&#28857;&#27298;&#36890;&#36335;</text>
-</svg><svg class="routes" id="b-svg"></svg></div>
+  
+</svg><div class="planlabel" style="left:2%;top:130px;font-size:11px;color:#7fd4c1">B2F</div><div class="planlabel" style="left:57%;top:130px;font-size:11px;color:#93a7ba">B1F</div><div class="planlabel" style="left:40.5%;top:2px;font-size:14px;color:#d9a441;transform:translateX(-100%)">⚡</div><div class="planlabel" style="left:83%;top:8px;font-size:10px;color:#d9a441;transform:translateX(-100%)">VAULT</div><div class="planlabel" style="left:97.5%;top:130px;font-size:10px;color:#ff8a80;transform:translateX(-100%)">EXIT</div><div class="planlabel" style="left:60.5%;top:221px;font-size:9px;color:#7f95ab;transform:translateX(-50%)">点検通路</div><svg class="routes" id="b-svg"></svg></div>
     <div class="card" id="b-info">ノードを順にタップして道をつなぐ。辺のコスト合計がそのまま実行の所要手数になる。</div>
     <button onclick="bUndo()">1つ戻す</button>
     <button onclick="startB()">やり直し</button>
@@ -254,7 +260,7 @@ function askA(id){const q=A_QS.find(x=>x.id===id);aUsed.push(id);aLeft--;
  renderA();}
 // ---------- Recon B ----------
 const B_NODES={P:[11,150],H:[32,150],U:[32,40],L:[54,150],V:[74,40],X:[89,150]};
-const B_EDGES={'P-H':[2,'低'],'H-U':[2,'低'],'H-L':[3,'高'],'U-V':[3,'低'],'L-V':[2,'高'],'V-X':[3,'中'],'H-X':[4,'中']};
+const B_EDGES={'P-H':[2,'低'],'H-U':[2,'低'],'H-L':[4,'高'],'U-V':[3,'低'],'L-V':[2,'高'],'V-X':[3,'中'],'H-X':[4,'中']};
 const B_NAMES={P:'地下駐車場',H:'地下通路',U:'配電室',L:'ロビー裏',V:'金庫前',X:'非常口'};
 const NO_EDGE={'P-U':'駐車場と配電室は階が違い、直通の出入口がない','P-L':'駐車場からロビー裏への直通路はない（地下通路経由のみ）','P-V':'金庫前は建物の最奥で、駐車場からの直通路はない','P-X':'非常口は内側からしか開かず、駐車場側からは入れない','H-V':'地下通路から金庫前への直通路はない（配電室かロビー裏を経由する）','U-L':'配電室とロビー裏の間は金庫の耐火壁で、通路がない','U-X':'配電室と非常口は建物の反対側で、直通路はない','L-X':'ロビー裏と非常口の間に通路はない'};
 function noEdgeReason(a,b){return NO_EDGE[a+'-'+b]||NO_EDGE[b+'-'+a]||null;}
@@ -279,7 +285,8 @@ else{lines+=`<line x1="${a[0]}%" y1="${a[1]+20}" x2="${b[0]}%" y2="${b[1]+20}" s
  if(bIn)draw(bIn,'#7fd4c1');draw(bPath,'#d9a441');svg.innerHTML=lines;
  $('b-phase').textContent=bPhase===1?'侵入路 P → V':'脱出路 V → X';
  let cost=0;for(let i=0;i<bPath.length-1;i++){const e=edgeKey(bPath[i],bPath[i+1]);if(e)cost+=B_EDGES[e][0];}
- $('b-info').textContent='現在の道： '+bPath.join(' → ')+'（コスト '+cost+'）';}
+ if(bPhase===2&&bIn){const ic=routeCost(bIn);$('b-info').textContent='侵入路： '+bIn.join(' → ')+'（コスト '+ic+'）確定 ／ 脱出路： '+bPath.join(' → ')+'（コスト '+cost+'）／ 合計 '+(ic+cost);}
+ else{$('b-info').textContent='現在の道： '+bPath.join(' → ')+'（コスト '+cost+'）';}}
 function tapNode(k){const last=bPath[bPath.length-1];if(k===last)return;
  if(bPhase===1&&k==='X'){$('b-info').innerHTML='<span class="red">X（非常口）は脱出口。侵入路は脱出口を通らない。脱出路は V（金庫前）に着いてから改めて設計する。</span>';return;}
  if(bPhase===2&&k==='P'){$('b-info').innerHTML='<span class="red">P（地下駐車場）は侵入口。脱出路は侵入口を通らない。</span>';return;}
@@ -288,7 +295,7 @@ function tapNode(k){const last=bPath[bPath.length-1];if(k===last)return;
  bPath.push(k);
  const target=bPhase===1?'V':'X';
  if(k===target){let cost=0;for(let i=0;i<bPath.length-1;i++)cost+=B_EDGES[edgeKey(bPath[i],bPath[i+1])][0];
-  if(bPhase===1){bIn=bPath.slice();S.routeIn=bPath.slice();bPhase=2;bPath=['V'];renderB();$('b-info').innerHTML=`侵入路が確定した： コスト ${cost}。次は脱出路（V→X）。`;}
+  if(bPhase===1){bIn=bPath.slice();S.routeIn=bPath.slice();bPhase=2;bPath=['V'];renderB();$('b-info').innerHTML=`<b class="teal">侵入路が確定した： ${bIn.join(' → ')}（コスト ${cost}）</b>。次は脱出路（V→X）。合計コストは侵入＋脱出。`;return;}
   else{S.routeOut=bPath.slice();S.bClear=true;S.routeInCost=bIn?routeCost(S.routeIn):0;
    $('b-info').innerHTML=`<b class="teal">✔ 経路設計完了（B クリア）</b> 侵入 ${S.routeIn.join('→')} ／ 脱出 ${S.routeOut.join('→')}`;syncRecon();setTimeout(()=>go('scr-recon'),1000);return;}}
  renderB();}
