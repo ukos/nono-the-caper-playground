@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-<title>THE CAPER — prototype v0.19</title>
+<title>THE CAPER — prototype v0.20</title>
 <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
 <link rel="apple-touch-icon" sizes="180x180" href="assets/icon-180.png">
 <link rel="manifest" href="manifest.webmanifest">
@@ -72,7 +72,8 @@
       <div class="big">世界が壊れる前に盗め！</div>
       <button class="primary" onclick="setMis(1)">M1「中央銀行の夜」</button>
       <button class="primary" onclick="setMis(2)">M2「美術館の夜」</button>
-      <div class="ver">prototype v0.19 / M2「美術館の夜」を追加（下見D・スイッチSAT・反転ギャラリー・回転展示台）／ M1の名工パーを到達可能な57に是正</div>
+      <button class="primary" onclick="setMis(3)">M3「中東の石油王宮」</button>
+      <div class="ver">prototype v0.20 / M3「中東の石油王宮」を追加（4鍵錠・宮殿巡回・回転金庫／変装セット）</div>
     </div>
   </section>
 
@@ -96,7 +97,7 @@
     <div class="card"><b>A. 情報収集パズル</b>（情報理論）— 質問3回で夜の体制8候補を1つに特定する。<br>
       <button onclick="startA()">A に挑む</button></div>
     <div class="card"><b>B. ネットワーク構築ゲーム</b>（グラフ理論）— 侵入路と脱出路を設計する。<br>
-      <button onclick="startB(0)">M1 中央銀行</button> <button onclick="startB(1)">M2 美術館</button> <button onclick="startB(2)">M3 港の倉庫</button></div>
+      <button onclick="startB(0)">M1 中央銀行</button> <button onclick="startB(1)">M2 美術館</button> <button onclick="startB(2)">M3 港の倉庫</button> <button onclick="startB(3)">S3 王宮</button></div>
     <div class="card" id="d-card" style="display:none"><b>D. 道具の詰め込み</b>（NP困難：ナップサック）— 容量10に収まるよう道具と金品を選ぶ。最適でなくても確定できるが、価値が収穫評価になる。<br>
       <button onclick="startD()">D に挑む</button></div>
     <div class="card mut">ルール： 下見は <b>最低1つクリア</b> しないと実行に入れない。全部やると実行が楽になるが、調査コストが開始警戒度に乗る。</div>
@@ -162,7 +163,7 @@
   <!-- RECON D -->
   <section id="scr-d" class="screen">
     <h2>D. 道具の詰め込み — バッグ容量 <span class="gold">10</span></h2>
-    <div class="card howto"><b>遊び方（ナップサック問題）</b>： 必須の文書ケース（重さ2）は最初から入っている。残りの品から、合計の重さが10を超えないように選んで詰める。価値の合計がそのまま収穫評価になる。道具は実行で効き目がある。容量内ならいつでも確定できてクリアになる（最適でなくてもよい）。</div>
+    <div class="card howto"><b>遊び方（ナップサック問題）</b>： 必須のケース（重さ2）は最初から入っている。残りの品から、合計の重さが10を超えないように選んで詰める。価値の合計がそのまま収穫評価になる。道具は実行で効き目がある。容量内ならいつでも確定できてクリアになる（最適でなくてもよい）。</div>
     <div id="d-items"></div>
     <div class="card" id="d-info"></div>
     <button class="primary" id="d-confirm" onclick="confirmD()">この詰め方で確定</button>
@@ -188,7 +189,7 @@
       <button onclick="move(1)">進む ▶</button>
       <button onclick="undo()">↩ アンドゥ</button>
     </div>
-    <div class="mut" style="text-align:center">キーボード： ← → で移動、E で操作、U でアンドゥ。1手ごとに警備と仕掛けも1ステップ進む。</div>
+    <div class="mut" style="text-align:left">キーボード： ← → で移動、E で操作、U でアンドゥ。1手ごとに警備と仕掛けも1ステップ進む。</div>
   </section>
 
   <!-- DEBRIEF -->
@@ -212,27 +213,31 @@ const S = {
   gears:[1,2,3], gearSteps:0, vaultOpen:false, loot:false, hasDoc:false,
   guardStep:0, escape:false, keyOrder:[],
   mis:1, dClear:false, pack:[], dValue:0,
-  tools:{smoke:false,glass:false,battery:false}, smokeUsed:false,
+  tools:{smoke:false,glass:false,battery:false,disguise:false}, smokeUsed:false,
   eFlip:false, eNode:'W', eKey:false,
   dials:[2,3,1], dialSteps:0, tiara:false, sw:{A:true,B:true,C:true,D:true}, doorOpen:false
 };
 const $=id=>document.getElementById(id);
 const POSE={idle:'assets/second-idle.png','walk-a':'assets/second-walk-a.png','walk-b':'assets/second-walk-b.png',sneak:'assets/second-sneak.png',crouch:'assets/second-crouch.png',operate:'assets/second-operate.png',reach:'assets/second-reach.png',carry:'assets/second-carry.png'};
 function go(id){document.querySelectorAll('.screen').forEach(e=>e.classList.remove('on'));$(id).classList.add('on');}
-const ART={bg1:'assets/media-generation-caper-s1-bg-vault-0-ebef1d7b-8c05-437f-a7f4-de49e3df6f73.webp',kv2:'assets/media-generation-caper-s2-kv-museum-0-d26e5a86-3f71-4d8f-bc44-bce891882765.webp',bg2:'assets/media-generation-caper-s2-bg-gallery-0-f869ee66-0c67-4188-bc3b-447d02e137e1.webp'};
+const ART={bg1:'assets/media-generation-caper-s1-bg-vault-0-ebef1d7b-8c05-437f-a7f4-de49e3df6f73.webp',kv2:'assets/media-generation-caper-s2-kv-museum-0-d26e5a86-3f71-4d8f-bc44-bce891882765.webp',bg2:'assets/media-generation-caper-s2-bg-gallery-0-f869ee66-0c67-4188-bc3b-447d02e137e1.webp',kv3:'assets/media-generation-caper-s3-kv-palace-0-15266ee3-1856-4271-8f45-30874ae2b8fd.webp',bg3:'assets/media-generation-caper-s3-bg-vault-0-93a168f4-4828-494d-82fd-672d44d239c1.webp'};
 const MISSIONS={
  1:{name:'M1「中央銀行の夜」',par:57,bg:ART.bg1,art:ART.bg1,
    brief:`SECOND へ。中央銀行、地下金庫。狙いは<b class="gold">介入計画書</b>ひとつ。<br>明朝6時、その計画が発動すれば通貨危機は隣国へ飛び火し、紛争の火種になる。<br>計画書を盗み出せ。WATCH が事前に公表させれば、危機は回避できる。<br><span class="mut">――世界はまだ、何も知らない。</span>`,
    deb:`計画書は WATCH の手に渡った。明朝、介入計画は“リーク”として公表され、為替市場は織り込み済みで静かに開いた。<br><b class="gold">紛争の火種は、火がつく前に消えた。</b>`,
-   r1:'配電室の扉の前に立った。コンソールには3色の鍵スロットがある。',doc:'介入計画書'},
+   r1:'配電室の扉の前に立った。コンソールには3色の鍵スロットがある。',r2:'金庫前通路。警備が巡回している。柱の陰は視線を切る。右端の扉へ。',r3:'金庫室。歯車盤が金庫を守っている。コンソール（歯車盤）を操作しよう。',esc:'脱出。巡回は往路と逆位相だ。左端の非常口へ戻れ。',doc:'介入計画書'},
  2:{name:'M2「美術館の夜」',par:45,bg:ART.bg2,art:ART.kv2,
    brief:`SECOND へ。夜の美術館、特別展示室の金庫。狙いは<b class="gold">寄贈画の移送リスト</b>。<br>「寄贈」の名目で、機密資産が国外へ持ち出されようとしている。リストには移送経路と受取先のすべてが記されている。<br>リストを盗み出せ。WATCH が公表すれば、移送計画は潰える。<br><span class="mut">――芸術の陰で、世界が動いている。</span>`,
    deb:`移送リストは WATCH の手に渡った。寄贈計画は公表と同時に白紙に戻った。<br>なお、出品作の1点は贋作だった。その鑑定記録も、寄贈スキームの証拠として押さえた。<br><b class="gold">世界混乱の芽は、静かに摘まれた。</b>`,
-   r1:'展示室の扉の前に立った。コンソールには4つのスイッチがある。',doc:'移送リスト'}
+   r1:'展示室の扉の前に立った。コンソールには4つのスイッチがある。',r2:'反転ギャラリー。鏡像展示室が広がっている。「調べる／操作」で反転できる。特別展示室の扉（T）を目指せ。',r3:'特別展示室。回転展示台の奥に金庫がある。コンソールを操作しよう。',esc:'脱出。ギャラリーは解錠済みだ。左端の通用口へ戻れ。',doc:'移送リスト'},
+ 3:{name:'M3「中東の石油王宮」',par:63,bg:ART.bg3,art:ART.kv3,
+   brief:`SECOND へ。砂漠国家の王宮、王族の宝物庫。狙いは<b class="gold">秘密外交記録</b>。<br>複数国家を巻き込む資源戦争の密約が、宝物庫の回転金庫に眠っている。<br>記録を盗み出せ。WATCH が公表すれば、密約は潰え、戦争は始まる前に終わる。<br><span class="mut">――砂漠の夜は、静かに更けていく。</span>`,
+   deb:`秘密外交記録は WATCH の手に渡った。密約は公表され、資源戦争の計画は水面下で崩れた。<br>なお、記録の末尾には差出人不明の符丁があった――<b class="gold">「MIDNIGHT」</b>。WATCH の分析官も、その名には心当たりがないという。<br>そして公表の段取りは、驚くほど整っていた。`,
+   r1:'宝物庫前室。錠前盤には4つの鍵穴がある。',r2:'宮殿の回廊。王室警備隊が巡回している。柱の陰は視線を切る。右端の扉へ。',r3:'宝物庫。回転金庫が記録を守っている。コンソールを操作しよう。',esc:'脱出。巡回は往路と逆位相だ。左端へ戻れ。',doc:'秘密外交記録'}
 };
-function setMis(n){S.mis=n;S.aClear=false;S.bClear=false;S.dClear=false;S.reconCost=0;S.facts={wing:false,guards:false,patrol:false};S.routeIn=null;S.routeOut=null;S.pack=[];S.dValue=0;S.tools={smoke:false,glass:false,battery:false};
+function setMis(n){S.mis=n;S.aClear=false;S.bClear=false;S.dClear=false;S.reconCost=0;S.facts={wing:false,guards:false,patrol:false};S.routeIn=null;S.routeOut=null;S.pack=[];S.dValue=0;S.tools={smoke:false,glass:false,battery:false,disguise:false};
  $('brief-body').innerHTML=MISSIONS[n].brief;$('brief-art').src=MISSIONS[n].art;
- $('d-card').style.display=n===2?'':'none';$('recon-d-wrap').style.display=n===2?'':'none';
+ $('d-card').style.display=n!==1?'':'none';$('recon-d-wrap').style.display=n!==1?'':'none';
  syncRecon();go('scr-brief');}
 // ---------- sprites (placeholder pixel art: nono-based SECOND, MI-style short layered hair, black suit) ----------
 function sprite(rows,pal){const c=document.createElement('canvas');c.width=rows[0].length;c.height=rows.length;const x=c.getContext('2d');rows.forEach((r,j)=>{[...r].forEach((ch,i)=>{if(pal[ch]){x.fillStyle=pal[ch];x.fillRect(i,j,1,1);}});});return c.toDataURL();}
@@ -284,6 +289,12 @@ const A_QSETS={
  {id:'guards', q:'「警備は3名か」', a:'情報屋「そうだ、3名体制だ」', fact:'guards', label:'警備は3名'},
  {id:'patrol', q:'「赤外線は交互点滅か」', a:'情報屋「その通り、交互に点滅している」', fact:'patrol', label:'赤外線は交互点滅'},
  {id:'trap', q:'「移送リストの置き場所は」', a:'情報屋「…そんなもの、知るわけがない」', fact:null, label:null}
+],
+3:[
+ {id:'wing', q:'「宝物庫は西翼か」', a:'情報屋「ああ、西翼の奥だ」', fact:'wing', label:'宝物庫は西翼'},
+ {id:'guards', q:'「警備は王室警備隊4名か」', a:'情報屋「そうだ、4名体制だ」', fact:'guards', label:'警備は4名'},
+ {id:'patrol', q:'「巡回は中庭側からか」', a:'情報屋「その通り、中庭側から回る」', fact:'patrol', label:'巡回は中庭側から'},
+ {id:'trap', q:'「王の寝室の場所は」', a:'情報屋「…そんなもの、知るわけがない」', fact:null, label:null}
 ]};
 const A_QS_GET=()=>A_QSETS[S.mis];
 let aLeft=3,aCand=8,aUsed=[];
@@ -347,7 +358,27 @@ const MAPS=[
 <rect x="54" y="112" width="7" height="2.4" fill="#8a4b32"/><line x1="54" y1="113.2" x2="61" y2="113.2" stroke="#c97b52" stroke-width="0.5"/>
 <path d="M 9 170 Q 46 244 83 170" fill="none" stroke="#33506b" stroke-width="9" opacity="0.35"/>
 <path d="M 9 170 Q 46 244 83 170" fill="none" stroke="#4b647f" stroke-width="0.7" stroke-dasharray="3 2"/>
-<line x1="25.5" y1="104" x2="28.5" y2="104" stroke="#0b1826" stroke-width="1.8"/><line x1="26" y1="126" x2="29" y2="126" stroke="#0b1826" stroke-width="1.8"/><line x1="44" y1="104" x2="47" y2="104" stroke="#0b1826" stroke-width="1.8"/><line x1="44" y1="126" x2="47" y2="126" stroke="#0b1826" stroke-width="1.8"/><line x1="62" y1="104" x2="65" y2="104" stroke="#0b1826" stroke-width="1.8"/><line x1="62" y1="126" x2="65" y2="126" stroke="#0b1826" stroke-width="1.8"/><line x1="80.5" y1="104" x2="83.5" y2="104" stroke="#0b1826" stroke-width="1.8"/><line x1="80.5" y1="126" x2="83.5" y2="126" stroke="#0b1826" stroke-width="1.8"/>`,labels:`<div class="planlabel" style="left:18%;top:8px;font-size:10px;color:#d9a441">2F</div><div class="planlabel" style="left:38.5%;top:130px;font-size:10px;color:#93a7ba">1F</div><div class="planlabel" style="left:46%;top:221px;font-size:9px;color:#7f95ab;transform:translateX(-50%)">点検通路</div><div class="planlabel" style="left:1.2%;top:130px;font-size:10px;color:#4aa3ff">海</div>`}
+<line x1="25.5" y1="104" x2="28.5" y2="104" stroke="#0b1826" stroke-width="1.8"/><line x1="26" y1="126" x2="29" y2="126" stroke="#0b1826" stroke-width="1.8"/><line x1="44" y1="104" x2="47" y2="104" stroke="#0b1826" stroke-width="1.8"/><line x1="44" y1="126" x2="47" y2="126" stroke="#0b1826" stroke-width="1.8"/><line x1="62" y1="104" x2="65" y2="104" stroke="#0b1826" stroke-width="1.8"/><line x1="62" y1="126" x2="65" y2="126" stroke="#0b1826" stroke-width="1.8"/><line x1="80.5" y1="104" x2="83.5" y2="104" stroke="#0b1826" stroke-width="1.8"/><line x1="80.5" y1="126" x2="83.5" y2="126" stroke="#0b1826" stroke-width="1.8"/>`,labels:`<div class="planlabel" style="left:18%;top:8px;font-size:10px;color:#d9a441">2F</div><div class="planlabel" style="left:38.5%;top:130px;font-size:10px;color:#93a7ba">1F</div><div class="planlabel" style="left:46%;top:221px;font-size:9px;color:#7f95ab;transform:translateX(-50%)">点検通路</div><div class="planlabel" style="left:1.2%;top:130px;font-size:10px;color:#4aa3ff">海</div>`},
+{name:'S3「中東の石油王宮」',S:'A',T:'G',X:'H',arc:'A-H',
+ nodes:{A:[9,150],B:[29,150],C:[26,40],D:[47,150],E:[44,40],F:[65,150],G:[66,40],H:[86,150]},
+ names:{A:'サービス入口',B:'厨房',C:'中庭',D:'衛兵詰所',E:'書庫',F:'謁見の間',G:'宝物庫',H:'地下水路出口'},
+ edges:{'A-B':[2,'低'],'B-C':[2,'低'],'B-D':[3,'中'],'C-E':[2,'低'],'D-E':[2,'低'],'D-F':[2,'中'],'E-G':[2,'低'],'F-G':[2,'高'],'F-H':[2,'低'],'A-H':[7,'中']},
+ costPos:{'A-B':[19,206],'B-C':[24,100],'B-D':[38,206],'C-E':[35,30],'D-E':[45.5,100],'D-F':[56,206],'E-G':[55,30],'F-G':[74,100],'F-H':[75.5,206],'A-H':[47,212]},
+ blockers:[['A-C','階違い',15,128],['B-E','直通なし',36,128],['D-G','通路なし',56,128],['E-F','石壁',55,100]],
+ noEdge:{'A-C':'サービス入口と中庭は階が違い、直通の階段がない','B-E':'厨房から書庫への直通路はない（中庭か衛兵詰所を経由する）','D-G':'衛兵詰所から宝物庫への直通路はない','E-F':'書庫と謁見の間の間は厚い石壁で、通路がない','A-D':'サービス入口から衛兵詰所への直通路はない（厨房経由のみ）','A-G':'宝物庫は王宮の最奥で、入口からの直通路はない','C-D':'中庭から衛兵詰所への直通路はない','C-F':'中庭から謁見の間への直通路はない','E-H':'書庫から地下水路出口への直通路はない','B-G':'厨房から宝物庫への直通路はない','D-H':'衛兵詰所から地下水路出口への直通路はない（謁見の間経由のみ）','C-G':'中庭から宝物庫への直通路はない（書庫経由のみ）','B-F':'厨房から謁見の間への直通路はない','C-H':'中庭から地下水路出口への直通路はない','B-H':'厨房から地下水路出口への直通路はない（入口からの水路のみ）','G-H':'宝物庫から地下水路出口への直通路はない（謁見の間経由のみ）','A-E':'サービス入口から書庫への直通路はない','A-F':'サービス入口から謁見の間への直通路はない'},
+ defReason:'この2地点を直接つなぐ通路はない',plan:`<rect x="0" y="0" width="100" height="238" fill="#0b1826"/><g stroke="#1d3850" stroke-width="0.4"><line x1="0" y1="60" x2="100" y2="60"/><line x1="0" y1="120" x2="100" y2="120"/><line x1="0" y1="180" x2="100" y2="180"/><line x1="25" y1="0" x2="25" y2="238"/><line x1="50" y1="0" x2="50" y2="238"/><line x1="75" y1="0" x2="75" y2="238"/></g>
+<rect x="17" y="16" width="18" height="88" fill="rgba(127,212,193,0.10)" stroke="#3d5a76" stroke-width="0.7"/>
+<rect x="37" y="16" width="16" height="88" fill="rgba(217,164,65,0.04)" stroke="#4b647f" stroke-width="0.7"/>
+<rect x="58" y="16" width="16" height="88" fill="rgba(217,164,65,0.08)" stroke="#d9a441" stroke-width="1.4"/>
+<rect x="20" y="126" width="18" height="88" fill="#12283d" stroke="#4b647f" stroke-width="0.7"/>
+<g stroke="#7fd4c1" stroke-width="0.7"><line x1="22" y1="136" x2="26" y2="136"/><line x1="22" y1="140" x2="26" y2="140"/><line x1="22" y1="144" x2="26" y2="144"/></g>
+<rect x="39" y="126" width="16" height="88" fill="rgba(255,81,71,0.04)" stroke="#4b647f" stroke-width="0.7"/>
+<rect x="57" y="126" width="16" height="88" fill="#12283d" stroke="#4b647f" stroke-width="0.7"/>
+<rect x="79" y="126" width="14" height="88" fill="rgba(74,163,255,0.06)" stroke="#4b647f" stroke-width="0.7"/>
+<rect x="52" y="112" width="7" height="2.4" fill="#8a4b32"/><line x1="52" y1="113.2" x2="59" y2="113.2" stroke="#c97b52" stroke-width="0.5"/>
+<path d="M 9 170 Q 47 244 86 170" fill="none" stroke="#33506b" stroke-width="9" opacity="0.35"/>
+<path d="M 9 170 Q 47 244 86 170" fill="none" stroke="#4aa3ff" stroke-width="0.7" stroke-dasharray="3 2"/>
+<line x1="25" y1="104" x2="28" y2="104" stroke="#0b1826" stroke-width="1.8"/><line x1="26" y1="126" x2="29" y2="126" stroke="#0b1826" stroke-width="1.8"/><line x1="43" y1="104" x2="46" y2="104" stroke="#0b1826" stroke-width="1.8"/><line x1="44" y1="126" x2="47" y2="126" stroke="#0b1826" stroke-width="1.8"/><line x1="64" y1="104" x2="67" y2="104" stroke="#0b1826" stroke-width="1.8"/><line x1="64" y1="126" x2="67" y2="126" stroke="#0b1826" stroke-width="1.8"/>`,labels:`<div class="planlabel" style="left:47%;top:221px;font-size:9px;color:#7f95ab;transform:translateX(-50%)">地下水路</div><div class="planlabel" style="left:18%;top:8px;font-size:10px;color:#7fd4c1">中庭</div>`}
 ];
 let curMap=0;const M=()=>MAPS[curMap];
 function noEdgeReason(a,b){const m=M();return m.noEdge[a+'-'+b]||m.noEdge[b+'-'+a]||m.defReason;}
@@ -399,54 +430,68 @@ function syncRecon(){$('recon-cost').textContent=S.reconCost;
  $('recon-d-state').textContent=S.dClear?'クリア ✔':'未クリア';
  $('btn-exec').disabled=!(S.aClear||S.bClear||S.dClear);}
 // ---------- Recon D (knapsack) ----------
-const D_ITEMS=[
- {id:'smoke',name:'スモークボール',w:3,v:5,fx:'実行Cの失敗ペナルティを1回無効'},
- {id:'glass',name:'グラス切り',w:3,v:6,fx:'実行E（反転時）に近道 C→T'},
- {id:'battery',name:'予備バッテリー',w:2,v:4,fx:'実行Fに最短手数の目安を表示'},
+const D_SETS={
+2:{caseName:'文書ケース',items:[
+ {id:'smoke',name:'スモークボール',w:3,v:5,tool:'smoke',fx:'実行Cの失敗ペナルティを1回無効'},
+ {id:'glass',name:'グラス切り',w:3,v:6,tool:'glass',fx:'実行E（反転時）に近道 C→T'},
+ {id:'battery',name:'予備バッテリー',w:2,v:4,tool:'battery',fx:'実行Fに最短手数の目安を表示'},
  {id:'watch',name:'金の懐中時計',w:2,v:6,fx:'金品'},
  {id:'pearl',name:'真珠のネックレス',w:1,v:3,fx:'金品'},
  {id:'candle',name:'銀の燭台',w:4,v:8,fx:'金品'},
- {id:'statue',name:'小型の金像',w:6,v:14,fx:'金品'}];
+ {id:'statue',name:'小型の金像',w:6,v:14,fx:'金品'}]},
+3:{caseName:'記録ケース',items:[
+ {id:'disguise',name:'変装セット',w:3,v:4,tool:'disguise',fx:'部屋2で視界に入っても1回だけ見逃される'},
+ {id:'smoke2',name:'煙幕弾',w:2,v:3,tool:'smoke',fx:'部屋1の失敗ペナルティを1回無効'},
+ {id:'pitcher',name:'金の水差し',w:3,v:7,fx:'金品'},
+ {id:'necklace',name:'宝石の首飾り',w:2,v:6,fx:'金品'},
+ {id:'ivory',name:'象牙の小箱',w:4,v:9,fx:'金品'},
+ {id:'candles',name:'銀の燭台セット',w:5,v:11,fx:'金品'},
+ {id:'hairpin',name:'真珠の髪飾り',w:1,v:3,fx:'金品'}]}};
+const D_ITEMS_GET=()=>D_SETS[S.mis].items;
 let dSel=new Set();
 function startD(){dSel=new Set(S.pack);renderD();go('scr-d');}
-function renderD(){const sel=D_ITEMS.filter(i=>dSel.has(i.id));const wsum=2+sel.reduce((a,i)=>a+i.w,0);const vsum=sel.reduce((a,i)=>a+i.v,0);
- $('d-items').innerHTML=`<div class="card"><b>文書ケース（必須）</b> 重さ2 ／ 価値0<div class="mut">標的の文書を入れるケース。最初からバッグに入っている。</div></div>`+D_ITEMS.map(i=>`<div class="card" style="${dSel.has(i.id)?'border-color:var(--brass)':''}"><b>${i.name}</b> 重さ${i.w} ／ 価値${i.v}<div class="mut">${i.fx}</div><button onclick="toggleD('${i.id}')">${dSel.has(i.id)?'出す':'入れる'}</button></div>`).join('');
+function renderD(){const sel=D_ITEMS_GET().filter(i=>dSel.has(i.id));const wsum=2+sel.reduce((a,i)=>a+i.w,0);const vsum=sel.reduce((a,i)=>a+i.v,0);
+ $('d-items').innerHTML=`<div class="card"><b>${D_SETS[S.mis].caseName}（必須）</b> 重さ2 ／ 価値0<div class="mut">標的の文書を入れるケース。最初からバッグに入っている。</div></div>`+D_ITEMS_GET().map(i=>`<div class="card" style="${dSel.has(i.id)?'border-color:var(--brass)':''}"><b>${i.name}</b> 重さ${i.w} ／ 価値${i.v}<div class="mut">${i.fx}</div><button onclick="toggleD('${i.id}')">${dSel.has(i.id)?'出す':'入れる'}</button></div>`).join('');
  $('d-info').innerHTML=`合計の重さ： <b class="${wsum>10?'red':'gold'}">${wsum}</b> ／ 10　価値合計： <b class="gold">${vsum}</b>${wsum>10?' <span class="red">容量オーバー。何か出してください。</span>':''}`;
  $('d-confirm').disabled=wsum>10;}
 function toggleD(id){dSel.has(id)?dSel.delete(id):dSel.add(id);renderD();}
-function confirmD(){S.pack=[...dSel];S.dValue=D_ITEMS.filter(i=>dSel.has(i.id)).reduce((a,i)=>a+i.v,0);
- S.tools={smoke:dSel.has('smoke'),glass:dSel.has('glass'),battery:dSel.has('battery')};
+function confirmD(){S.pack=[...dSel];S.dValue=D_ITEMS_GET().filter(i=>dSel.has(i.id)).reduce((a,i)=>a+i.v,0);
+ S.tools={smoke:false,glass:false,battery:false,disguise:false};
+ D_ITEMS_GET().filter(i=>dSel.has(i.id)&&i.tool).forEach(i=>S.tools[i.tool]=true);
  S.dClear=true;syncRecon();go('scr-recon');}
 // ---------- Execution ----------
 const ROOM_W={1:12,2:14,3:12};
-let guardSeq=[8,9,10,9,8,7],guardFace=[1,1,1,-1,-1,-1];
+const PATROL={1:{w:14,seq:[8,9,10,9,8,7],face:[1,1,1,-1,-1,-1],pillars:[4,7,11],escGs:3},3:{w:16,seq:[6,7,8,9,10,11,10,9,8,7],face:[1,1,1,1,1,-1,-1,-1,-1,-1],pillars:[2,5,10],escGs:5}};
+const P=()=>PATROL[S.mis]||PATROL[1];
+const RW=()=>S.room===2&&PATROL[S.mis]?P().w:ROOM_W[S.room];
 function startExec(){S.alert=S.reconCost;S.steps=0;S.room=1;S.px=0;S.hist=[];S.gears=[1,2,3];S.gearSteps=0;S.vaultOpen=false;S.loot=false;S.hasDoc=false;S.escape=false;S.guardStep=0;
- S.doorOpen=false;S.eFlip=false;S.eNode='W';S.eKey=false;S.dials=[2,3,1];S.dialSteps=0;S.tiara=false;S.sw={A:true,B:true,C:true,D:true};S.smokeUsed=false;
+ S.doorOpen=false;S.eFlip=false;S.eNode='W';S.eKey=false;S.dials=(typeof DIALCFG!=='undefined'&&DIALCFG[S.mis])?[...DIALCFG[S.mis].start]:[2,3,1];S.dialSteps=0;S.tiara=false;S.sw={A:true,B:true,C:true,D:true};S.smokeUsed=false;S.disguiseUsed=false;
  $('track').style.backgroundImage=`url(${MISSIONS[S.mis].bg})`;$('track').style.backgroundSize='cover';$('track').style.backgroundPosition='center';
  $('hud-info').textContent=A_QSETS[S.mis].filter(q=>q.fact&&S.facts[q.fact]).map(q=>q.label).join(' ／ ');
  go('scr-exec');enterRoom(1,MISSIONS[S.mis].r1);}
-function enterRoom(n,msg){S.room=n;S.px=0;S.pose='idle';S.hist=[];if(n===2&&S.escape){S.px=ROOM_W[2]-1;}
+function enterRoom(n,msg){S.room=n;S.px=0;S.pose='idle';S.hist=[];if(n===2&&S.escape){S.px=(PATROL[S.mis]?P().w:ROOM_W[2])-1;}
  $('hud-room').textContent=S.escape?'3（脱出）':n;renderRoom(msg);}
 function cellX(i,w){return `calc(${i*(100/w)}% + 4px)`;}
-function renderRoom(msg){const t=$('track');const w=ROOM_W[S.room];let h='<div class="floor"></div>';
+function renderRoom(msg){const t=$('track');const w=RW();let h='<div class="floor"></div>';
  if(S.room===1){h+=`<div class="obj" style="left:${cellX(9,w)}">🗄️</div><div class="cellmark" style="left:${cellX(9,w)}">コンソール</div><img class="doorimg" src="assets/door-vault.png" style="right:6px">`;}
  if(S.room===2&&S.mis===2&&!S.escape){h+=renderE();}
- else if(S.room===2){if(S.mis===1){[4,7,11].forEach(p=>{h+=`<div class="pillar" style="left:calc(${p*(100/w)}% + 12px)"></div>`;});
-   const gi=guardSeq[S.guardStep%6];const gf=guardFace[S.guardStep%6];
-   if(S.facts.patrol){for(let k=1;k<=3;k++){const gp=guardSeq[(S.guardStep+k)%6];h+=`<img class="actor guardimg ghost" src="assets/guard-idle.png" style="left:${cellX(gp,w)}">`;}}
+ else if(S.room===2){if(PATROL[S.mis]){P().pillars.forEach(p=>{h+=`<div class="pillar" style="left:calc(${p*(100/w)}% + 12px)"></div>`;});
+   const gi=P().seq[S.guardStep%P().seq.length];const gf=P().face[S.guardStep%P().seq.length];
+   if(S.facts.patrol){for(let k=1;k<=3;k++){const gp=P().seq[(S.guardStep+k)%P().seq.length];h+=`<img class="actor guardimg ghost" src="assets/guard-idle.png" style="left:${cellX(gp,w)}">`;}}
    h+=`<div class="guardvis" style="left:${cellX(gf===1?gi+1:gi-2,w)};width:${(200/w)}%"></div>`;
    h+=`<img class="actor guardimg" src="${S.guardStep%2?'assets/guard-walk-a.png':'assets/guard-walk-b.png'}" style="left:${cellX(gi,w)}${gf===-1?';transform:scaleX(-1)':''}">`;}
    h+=`<img class="doorimg" src="assets/door-vault.png" style="${S.escape?'left:6px':'right:6px'}">`;}
- if(S.room===3){h+=`<div class="obj" style="left:${cellX(8,w)}">🧰</div><div class="cellmark" style="left:${cellX(8,w)}">歯車盤</div><div class="obj" style="left:${cellX(10,w)}">🏦</div><div class="cellmark" style="left:${cellX(10,w)}">金庫</div>`;}
+ if(S.room===3){h+=`<div class="obj" style="left:${cellX(8,w)}">🧰</div><div class="cellmark" style="left:${cellX(8,w)}">${S.mis===1?'歯車盤':'コンソール'}</div><div class="obj" style="left:${cellX(10,w)}">🏦</div><div class="cellmark" style="left:${cellX(10,w)}">金庫</div>`;}
  const disp=S.hasDoc?'carry':(hidden()?'crouch':(S.pose||'idle'));
  const eMode=(S.room===2&&S.mis===2&&!S.escape);
  h+=`<img class="actor" id="pl" src="${POSE[disp]}" style="left:${eMode?`calc(${E_POS[S.eNode]}% - 14px)`:cellX(S.px,w)}">`;
  t.innerHTML=h;
  $('hud-alert').textContent=S.alert;$('hud-steps').textContent=S.steps;
  if(msg)$('ex-msg').innerHTML=msg;
- const RN=S.mis===1?{1:'部屋1：配電室',2:'部屋2：金庫前通路',3:'部屋3：金庫'}:{1:'部屋1：展示室の扉',2:'部屋2：反転ギャラリー',3:'部屋3：特別展示室'};
+ const RN={1:{1:'部屋1：配電室',2:'部屋2：金庫前通路',3:'部屋3：金庫'},2:{1:'部屋1：展示室の扉',2:'部屋2：反転ギャラリー',3:'部屋3：特別展示室'},3:{1:'部屋1：宝物庫前室',2:'部屋2：回廊',3:'部屋3：宝物庫'}}[S.mis];
  $('ex-title').textContent='実行フェーズ — '+RN[S.room]+(S.escape?'（脱出）':'');
  const HOWTO=S.mis===1?{1:'<b>遊び方（条件充足パズル）</b>： コンソールに近づいて「調べる／操作」を押すと、3色の鍵の条件文が出る。すべての条件を同時に満たす順序で鍵を選ぶゲーム。順序を間違えると警戒度+1。',2:'<b>遊び方（巡回読み）</b>： 1手動くごとに警備員も1歩進む。赤い範囲が警備の視界で、その中に入ると警戒度+2で部屋の入口に戻される。柱のあるマスは陰になっていて見つからない。警備の動きを数えながら進むゲーム。',3:'<b>遊び方（操作列パズル）</b>： 歯車盤に近づいて操作する。各レバーは2つの歯車を同時に1目盛り進める。3つの歯車の数字を目標にそろえるゲームで、操作の順序と回数が大事。'}:{1:'<b>遊び方（条件充足パズル）</b>： コンソールに近づいて「調べる／操作」を押すと、4つのスイッチと条件文が出る。すべての条件を同時に満たす組合せにするゲーム。各条件の成否はその場で色表示される。確定時に満たしていない条件があると警戒度+1。',2:'<b>遊び方（空間変形パズル）</b>： 展示室は「反転」で通路の配置が鏡像に入れ替わる。地点をタップして移動し、「調べる／操作」で反転する（反転も1手に数える）。ガラスケース前（C）で扉の鍵を取ってから、特別展示室の扉（T）へ。反転しないと T には届かない。',3:'<b>遊び方（操作列パズル）</b>： 回転展示台のコンソールを操作する。各レバーは2つの台を同時に回す（逆向きに回る台もある）。3台の向きを主錠 [0,0,0] にそろえるゲーム。副錠 [2,2,2] で小金庫も開く。'};
+ if(S.mis===3){HOWTO[1]='<b>遊び方（条件充足パズル）</b>： コンソールに近づいて「調べる／操作」を押すと、4つの鍵の条件文が出る。すべての条件を同時に満たす順序で鍵を選ぶゲーム。順序を間違えると警戒度+1。';HOWTO[2]='<b>遊び方（巡回読み）</b>： 1手動くごとに警備も1歩進む。赤い範囲が警備の視界で、その中に入ると警戒度+2で部屋の入口に戻される。柱のあるマスは陰になっていて見つからない。変装セットを持っていると、1回だけ視界に入っても見逃される（警戒度+1）。';HOWTO[3]='<b>遊び方（操作列パズル）</b>： 回転金庫のコンソールを操作する。各レバーは2つのダイヤルを同時に回す（逆向きに回る台もある）。3つのダイヤルを主錠 [0,0,0] にそろえるゲーム。副錠 [2,2,2] で小金庫も開く。';}
  $('ex-howto').innerHTML=HOWTO[S.room]+(S.escape&&S.room===2?(S.mis===1?' 脱出時は巡回の位相が往路と逆になる。':' 脱出路は解錠済み。左端まで戻るだけだ。'):'');
  $('ex-panel').innerHTML='';}
 function pushHist(){S.hist.push(JSON.stringify({px:S.px,gs:S.guardStep,steps:S.steps,alert:S.alert,gears:S.gears,eN:S.eNode,eF:S.eFlip,eK:S.eKey,dials:S.dials}));if(S.hist.length>60)S.hist.shift();}
@@ -454,31 +499,33 @@ function undo(){const s=S.hist.pop();if(!s){$('ex-msg').innerHTML='これ以上�
  const o=JSON.parse(s);S.px=o.px;S.guardStep=o.gs;S.steps=o.steps;S.alert=o.alert;S.gears=o.gears;if(o.eN!==undefined){S.eNode=o.eN;S.eFlip=o.eF;S.eKey=o.eK;S.dials=o.dials;}renderRoom('1手戻した。（警戒度は巻き戻らない仕様の試作版：今回は警戒度も戻している）');}
 function move(d){if(S.room===0)return;
  if(S.room===2&&S.mis===2&&!S.escape){const ns=eNeighbors(S.eNode).sort((a,b)=>E_POS[a]-E_POS[b]);const t=d<0?ns[0]:ns[ns.length-1];if(t&&t!==S.eNode)eTap(t);return;}
- pushHist();const w=ROOM_W[S.room];const nx=S.px+d;
+ pushHist();const w=RW();const nx=S.px+d;
  if(nx<0||nx>=w){S.hist.pop();return;}
  S.px=nx;S.steps++;S.pose=S.steps%2?'walk-a':'walk-b';advanceWorld();renderRoom(stepMsg());checkRoom();}
-function advanceWorld(){if(S.room===2){S.guardStep=(S.guardStep+1)%6;}}
+function advanceWorld(){if(S.room===2&&PATROL[S.mis]){S.guardStep=(S.guardStep+1)%P().seq.length;}}
 function stepMsg(){return S.room===2?(hidden()?'柱の陰に隠れている。':'通路を進んだ。'):'進んだ。';}
-function hidden(){return S.room===2&&(S.px===4||S.px===7||S.px===11);}
+function hidden(){return S.room===2&&!!PATROL[S.mis]&&P().pillars.includes(S.px);}
 function checkRoom(){
  if(S.room===2&&S.mis===2&&S.escape){if(S.px===0){missionClear();return;}}
- if(S.room===2&&S.mis===1){const gi=guardSeq[S.guardStep%6];const gf=guardFace[S.guardStep%6];
+ if(S.room===2&&PATROL[S.mis]){const gi=P().seq[S.guardStep%P().seq.length];const gf=P().face[S.guardStep%P().seq.length];
   const vis=gf===1?[gi+1,gi+2]:[gi-1,gi-2];
-  if(vis.includes(S.px)&&!hidden()){S.alert+=2;$('ex-msg').innerHTML='<span class="red">⚠ 警備の視線に入った！ 警戒度+2。部屋の入口に戻された。</span>';S.px=S.escape?ROOM_W[2]-1:0;S.guardStep=0;renderRoom();syncHud();if(S.alert>=6)fail();return;}
-  if(!S.escape&&S.px===ROOM_W[2]-1){enterRoom(3,'金庫室。歯車盤が金庫を守っている。コンソール（歯車盤）を操作しよう。');return;}
+  if(vis.includes(S.px)&&!hidden()){
+   if(S.tools.disguise&&!S.disguiseUsed){S.disguiseUsed=true;S.alert+=1;$('ex-msg').innerHTML='<span class="red">⚠ 視界に入ったが、変装が警備を欺いた！ 警戒度+1（この手は一度きり）。</span>';syncHud();if(S.alert>=6)fail();return;}
+   S.alert+=2;$('ex-msg').innerHTML='<span class="red">⚠ 警備の視線に入った！ 警戒度+2。部屋の入口に戻された。</span>';S.px=S.escape?P().w-1:0;S.guardStep=0;renderRoom();syncHud();if(S.alert>=6)fail();return;}
+  if(!S.escape&&S.px===P().w-1){enterRoom(3,MISSIONS[S.mis].r3);return;}
   if(S.escape&&S.px===0){missionClear();return;}}
- if(S.room===1&&S.px===ROOM_W[1]-1&&S.doorOpen){enterRoom(2,S.mis===1?'金庫前通路。警備が巡回している。柱の陰は視線を切る。右端の扉へ。':'反転ギャラリー。鏡像展示室が広がっている。「調べる／操作」で反転できる。特別展示室の扉（T）を目指せ。');}
- if(S.room===3&&S.px===ROOM_W[3]-1&&S.hasDoc&&!S.escape){S.escape=true;const em=S.mis===1?'脱出。巡回は往路と逆位相だ。左端の非常口へ戻れ。':'脱出。ギャラリーは解錠済みだ。左端の通用口へ戻れ。';enterRoom(2,em);S.guardStep=3;renderRoom(em);}
+ if(S.room===1&&S.px===ROOM_W[1]-1&&S.doorOpen){enterRoom(2,MISSIONS[S.mis].r2);}
+ if(S.room===3&&S.px===ROOM_W[3]-1&&S.hasDoc&&!S.escape){S.escape=true;const em=MISSIONS[S.mis].esc;enterRoom(2,em);S.guardStep=PATROL[S.mis]?P().escGs:3;renderRoom(em);}
  syncHud();}
 function syncHud(){$('hud-alert').textContent=S.alert;$('hud-steps').textContent=S.steps;}
-function fail(){S.alert=0;S.guardStep=0;S.px=S.escape?ROOM_W[2]-1:0;if(S.mis===2&&S.room===2){S.eNode='W';S.eFlip=false;}renderRoom('<span class="red">警戒度が限界に達し、作戦は仕切り直しになった（この部屋から再開）。</span>');}
+function fail(){S.alert=0;S.guardStep=0;S.px=S.escape?((PATROL[S.mis]?P().w:ROOM_W[2])-1):0;if(S.mis===2&&S.room===2){S.eNode='W';S.eFlip=false;}renderRoom('<span class="red">警戒度が限界に達し、作戦は仕切り直しになった（この部屋から再開）。</span>');}
 function interact(){
- if(S.room===1){if(Math.abs(S.px-9)<=1){S.pose='operate';renderRoom();S.mis===2?openSwitchPuzzle():openKeyPuzzle();}else $('ex-msg').innerHTML='コンソールに近づいて操作しよう（右側の棚）。';}
+ if(S.room===1){if(Math.abs(S.px-9)<=1){S.pose='operate';renderRoom();S.mis===2?openSwitchPuzzle():S.mis===3?openKey4Puzzle():openKeyPuzzle();}else $('ex-msg').innerHTML='コンソールに近づいて操作しよう（右側の棚）。';}
  else if(S.room===2&&S.mis===2&&!S.escape){pushHist();S.steps++;S.eFlip=!S.eFlip;S.pose='operate';renderRoom(S.eFlip?'展示室が反転した。通路の配置が鏡像に入れ替わった。':'展示室を通常の配置に戻した。');syncHud();}
- else if(S.room===3){if(Math.abs(S.px-8)<=1||Math.abs(S.px-10)<=1){S.pose='operate';renderRoom();S.mis===2?openDialPuzzle():openGearPuzzle();}else $('ex-msg').innerHTML='コンソールに近づいて操作しよう。';}
+ else if(S.room===3){if(Math.abs(S.px-8)<=1||Math.abs(S.px-10)<=1){S.pose='operate';renderRoom();S.mis===1?openGearPuzzle():openDialPuzzle();}else $('ex-msg').innerHTML='コンソールに近づいて操作しよう。';}
  else{$('ex-msg').innerHTML='ここでは操作するものはない。';}}
 // ---------- Room2 (M2): mirror gallery (E) ----------
-const E_POS={W:6,A:24,B:42,C:60,D:78,T:94};
+const E_POS={W:9,A:25,B:42,C:59,D:76,T:91};
 const E_NAMES={W:'西入口',A:'絵画の間',B:'彫刻の間',C:'ガラスケース前',D:'吹き抜け際',T:'特別展示室の扉'};
 const E_EDGES={normal:[['W','A'],['A','B'],['B','C'],['C','D'],['D','B']],flip:[['W','A'],['A','D'],['C','B'],['B','T']]};
 function eEdges(){const e=E_EDGES[S.eFlip?'flip':'normal'].map(x=>x.slice());if(S.eFlip&&S.tools.glass)e.push(['C','T']);return e;}
@@ -511,14 +558,30 @@ function openKeyPuzzle(){S.keyOrder=[];
  </div>
  <div id="key-seq" class="cond">選択： なし</div>
  <button class="primary" onclick="checkKeys()">確定する</button> <button onclick="$('ex-panel').innerHTML=''">閉じる</button></div>`;}
-function pushKey(k){if(S.keyOrder.includes(k)||S.keyOrder.length>=3)return;S.keyOrder.push(k);
- $('key-seq').textContent='選択： '+S.keyOrder.map(x=>({B:'青',G:'緑',R:'赤'})[x]).join(' → ');}
+function pushKey(k){if(S.keyOrder.includes(k)||S.keyOrder.length>=4)return;S.keyOrder.push(k);
+ $('key-seq').textContent='選択： '+S.keyOrder.map(x=>({B:'青',G:'緑',R:'赤'})[x]||x).join(' → ');}
 function checkKeys(){if(S.keyOrder.length<3){$('key-seq').innerHTML='<span class="red">3本すべて選んでください。</span>';return;}
  const p={};S.keyOrder.forEach((k,i)=>p[k]=i);
  const c1=p.B<p.R,c2=Math.abs(p.R-p.G)===1,c3=p.G!==2;
  if(c1&&c2&&c3){S.doorOpen=true;$('ex-panel').innerHTML='';renderRoom('<b class="teal">✔ 全条件を満たした。扉が開いた。右端へ進め。</b>');}
  else{S.alert++;syncHud();$('key-seq').innerHTML=`<span class="red">条件${!c1?'1':!c2?'2':'3'}を満たしていない。警戒度+1。</span>`;
   if(S.alert>=6)fail();}}
+// ---------- Room1 (M3): 4-key order ----------
+const KEY4C={'金':'#d9a441','銀':'#c0c8d0','銅':'#c97b52','鉄':'#5a6672'};
+function openKey4Puzzle(){S.keyOrder=[];
+ $('ex-panel').innerHTML=`<div class="card"><b>宝物庫の錠： 4つの鍵を差す順序を決めよ</b>
+ <div class="cond">条件1： 銀の鍵は、金の鍵のすぐ後に差す</div>
+ <div class="cond">条件2： 銅の鍵は、最初でも最後でもない</div>
+ <div class="cond">条件3： 鉄の鍵は、銀の鍵より前に差す</div>
+ <div class="keys">${['金','銀','銅','鉄'].map(k=>`<button class="keybtn" style="background:${KEY4C[k]}" onclick="pushKey('${k}')">${k}</button>`).join('')}</div>
+ <div id="key-seq" class="cond">選択： なし</div>
+ <button class="primary" onclick="checkKeys4()">確定する</button> <button onclick="$('ex-panel').innerHTML=''">閉じる</button></div>`;}
+function checkKeys4(){if(S.keyOrder.length<4){$('key-seq').innerHTML='<span class="red">4本すべて選んでください。</span>';return;}
+ const p={};S.keyOrder.forEach((k,i)=>p[k]=i);
+ const c1=p['銀']===p['金']+1,c2=p['銅']!==0&&p['銅']!==3,c3=p['鉄']<p['銀'];
+ if(c1&&c2&&c3){S.doorOpen=true;$('ex-panel').innerHTML='';renderRoom('<b class="teal">✔ 全条件を満たした。宝物庫への扉が開いた。右端へ進め。</b>');}
+ else if(S.tools.smoke&&!S.smokeUsed){S.smokeUsed=true;$('ex-panel').innerHTML='';renderRoom('<span class="red">条件を満たしていない。</span> 煙幕弾が警報をごまかした（警戒度は上がらない）。');}
+ else{S.alert++;syncHud();$('key-seq').innerHTML=`<span class="red">条件${!c1?'1':!c2?'2':'3'}を満たしていない。警戒度+1。</span>`;if(S.alert>=6)fail();}}
 // ---------- Room1 (M2): switch SAT (C) ----------
 function swConds(){const s=S.sw;return[
  ['赤外線とスポットは同時に ON にしない',!(s.A&&s.B)],
@@ -566,34 +629,35 @@ function dialDist(g){const key=g.join(',');if(key==='0,0,0')return 0;
   for(const st of q)for(const L in DIAL_LV){const ns=st.map((v,i)=>(v+DIAL_LV[L][i]+4)%4);const k=ns.join(',');if(k==='0,0,0')return d;if(!seen.has(k)){seen.add(k);nq.push(ns);}}
   q=nq;}
  return -1;}
+const DIALCFG={2:{start:[2,3,1],sub:[2,2,2],subName:'暁のティアラ',mainShort:4,panel:'回転展示台コンソール',doc:'移送リスト'},3:{start:[2,0,0],sub:[2,2,2],subName:'王家の宝珠',mainShort:5,panel:'回転金庫コンソール',doc:'秘密外交記録'}};
 function openDialPuzzle(){renderDials();}
 function renderDials(){
- $('ex-panel').innerHTML=`<div class="card"><b>回転展示台コンソール</b> — 3台の向きを主錠 [0, 0, 0] にそろえよ。現在： [${S.dials.join(', ')}]${S.vaultOpen?' ／ 副錠目標： [2, 2, 2]':''}${S.tools.battery&&!S.vaultOpen?` ／ <span class="teal">主錠まであと最低 ${dialDist(S.dials)} 手</span>`:''}
+ $('ex-panel').innerHTML=`<div class="card"><b>${DIALCFG[S.mis].panel}</b> — 3つのダイヤルを主錠 [0, 0, 0] にそろえよ。現在： [${S.dials.join(', ')}]${S.vaultOpen?' ／ 副錠目標： ['+DIALCFG[S.mis].sub.join(', ')+']':''}${S.tools.battery&&!S.vaultOpen?` ／ <span class="teal">主錠まであと最低 ${dialDist(S.dials)} 手</span>`:''}
  <div class="gears">${S.dials.map(g=>`<div class="gear" style="transform:rotate(${g*90}deg)"><div class="mark"></div><div class="num" style="transform:rotate(${-g*90}deg)">${g}</div></div>`).join('')}</div>
  <div style="text-align:center">
   <button onclick="dial('A')">レバーA（台1・2を+1）</button>
   <button onclick="dial('B')">レバーB（台2を+1・台3を−1）</button>
   <button onclick="dial('C')">レバーC（台1を−1・台3を+1）</button>
  </div>
- <div class="cond" id="dial-msg">操作回数： ${S.dialSteps}（主錠の最短は4手）</div>
+ <div class="cond" id="dial-msg">操作回数： ${S.dialSteps}（主錠の最短は${DIALCFG[S.mis].mainShort}手）</div>
  <button onclick="$('ex-panel').innerHTML=''">閉じる</button></div>`;}
 function dial(L){pushHist();S.dialSteps++;S.steps++;
  S.dials=S.dials.map((v,i)=>(v+DIAL_LV[L][i]+4)%4);
  renderDials();syncHud();
  if(!S.vaultOpen&&S.dials.every(g=>g===0)){S.vaultOpen=true;S.hasDoc=true;
-  $('dial-msg').innerHTML='<b class="teal">✔ 金庫が開いた！ 移送リストを入手。あとは脱出だけだ（右端へ進むと脱出に入る）。小金庫の副錠 [2,2,2] に挑むこともできる。</b>';}
- else if(S.vaultOpen&&!S.tiara&&S.dials.every(g=>g===2)){S.tiara=true;
-  $('dial-msg').innerHTML='<b class="gold">💎 小金庫が開いた。暁のティアラを入手（収穫評価アップ）。</b>';}}
+  $('dial-msg').innerHTML=`<b class="teal">✔ 金庫が開いた！ ${DIALCFG[S.mis].doc}を入手。あとは脱出だけだ（右端へ進むと脱出に入る）。小金庫の副錠 [${DIALCFG[S.mis].sub.join(',')}] に挑むこともできる。</b>`;}
+ else if(S.vaultOpen&&!S.tiara&&DIALCFG[S.mis].sub.every((v,i)=>S.dials[i]===v)){S.tiara=true;
+  $('dial-msg').innerHTML=`<b class="gold">💎 小金庫が開いた。${DIALCFG[S.mis].subName}を入手（収穫評価アップ）。</b>`;}}
 // ---------- clear ----------
 function missionClear(){const par=MISSIONS[S.mis].par;
  const stealth=S.alert<=1?'★★★':S.alert<=3?'★★☆':'★☆☆';
  const craft=S.steps<=par?'★★★':S.steps<=par+10?'★★☆':'★☆☆';
- const lootLine=S.mis===1?(S.loot?'★★★（金塊を入手）':'☆☆☆（小金庫は開けていない）'):`価値 ${S.dValue} ／ 20${S.tiara?' ＋ 暁のティアラ':''}（${S.dValue>=20&&S.tiara?'★★★':(S.dValue>=12||S.tiara)?'★★☆':'★☆☆'}）`;
+ const lootLine=S.mis===1?(S.loot?'★★★（金塊を入手）':'☆☆☆（小金庫は開けていない）'):`価値 ${S.dValue} ／ 20${S.tiara?' ＋ '+DIALCFG[S.mis].subName:''}（${S.dValue>=20&&S.tiara?'★★★':(S.dValue>=12||S.tiara)?'★★☆':'★☆☆'}）`;
  $('score').innerHTML=`<div class="cond">完遂： ★★★（${MISSIONS[S.mis].doc}を持ち帰った）</div>
  <div class="cond">隠密： ${stealth}（警戒度 ${S.alert}）</div>
  <div class="cond">名工： ${craft}（総手数 ${S.steps} ／ パー ${par}）</div>
  <div class="cond">収穫： ${lootLine}</div>
- <div class="cond mut">下見： A ${S.aClear?'クリア':'未クリア'} ／ B ${S.bClear?'クリア':'未クリア'}${S.mis===2?' ／ D '+(S.dClear?'クリア':'未クリア'):''}</div>`;
+ <div class="cond mut">下見： A ${S.aClear?'クリア':'未クリア'} ／ B ${S.bClear?'クリア':'未クリア'}${S.mis!==1?' ／ D '+(S.dClear?'クリア':'未クリア'):''}</div>`;
  $('deb-body').innerHTML=MISSIONS[S.mis].deb;
  go('scr-debrief');}
 document.addEventListener('dblclick',e=>{e.preventDefault();},{passive:false});
