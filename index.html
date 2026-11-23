@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>THE CAPER — prototype v0.4</title>
+<title>THE CAPER — prototype v0.5</title>
 <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
 <link rel="apple-touch-icon" sizes="180x180" href="assets/icon-180.png">
 <link rel="manifest" href="manifest.webmanifest">
@@ -61,7 +61,7 @@
     <div class="card" style="text-align:center">
       <div class="big">世界が壊れる前に盗め！</div>
       <button class="primary" onclick="go('scr-brief')">ミッション開始</button>
-      <div class="ver">prototype v0.4 / M1「中央銀行の夜」／ SECOND 本番絵（シートA）組み込み済み／ アプリアイコン設定済み</div>
+      <div class="ver">prototype v0.5 / M1「中央銀行の夜」／ SECOND 本番絵（シートA）組み込み済み／ アプリアイコン設定済み</div>
     </div>
   </section>
 
@@ -226,6 +226,7 @@ function renderB(){const wrap=$('b-nodes');wrap.querySelectorAll('.node').forEac
  $('b-info').textContent='現在の道： '+bPath.join(' → ')+'（コスト '+cost+'）';}
 function tapNode(k){const last=bPath[bPath.length-1];if(k===last)return;
  if(!edgeKey(last,k)){$('b-info').innerHTML=`<span class="red">${last} と ${k} はつながっていない。</span>`;return;}
+ if(bPath.includes(k)){$('b-info').innerHTML=`<span class="red">${k} はすでに通っている。道は同じ地点を2度通らない（戻りたいときは「1つ戻す」）。</span>`;return;}
  bPath.push(k);
  const target=bPhase===1?'V':'X';
  if(k===target){let cost=0;for(let i=0;i<bPath.length-1;i++)cost+=B_EDGES[edgeKey(bPath[i],bPath[i+1])][0];
