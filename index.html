@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>THE CAPER — prototype v0.9</title>
+<title>THE CAPER — prototype v0.10</title>
 <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
 <link rel="apple-touch-icon" sizes="180x180" href="assets/icon-180.png">
 <link rel="manifest" href="manifest.webmanifest">
@@ -66,7 +66,7 @@
     <div class="card" style="text-align:center">
       <div class="big">世界が壊れる前に盗め！</div>
       <button class="primary" onclick="go('scr-brief')">ミッション開始</button>
-      <div class="ver">prototype v0.9 / M1「中央銀行の夜」／ SECOND 本番絵（シートA）組み込み済み／ アプリアイコン設定済み</div>
+      <div class="ver">prototype v0.10 / M1「中央銀行の夜」／ SECOND 本番絵（シートA）組み込み済み／ アプリアイコン設定済み</div>
     </div>
   </section>
 
@@ -138,7 +138,7 @@
   <g stroke="#ff8a80" stroke-width="0.6"><line x1="86" y1="200" x2="97" y2="200"/><line x1="86" y1="204" x2="97" y2="204"/><line x1="86" y1="208" x2="97" y2="208"/></g>
   <text x="97" y="140" fill="#ff8a80" font-size="5.5" font-weight="700" text-anchor="end">EXIT</text>
   <!-- fire wall between U/L (the blocker) -->
-  <rect x="42.6" y="104" width="0.9" height="52" fill="#8a4b32"/><rect x="42.6" y="184" width="0.9" height="30" fill="#8a4b32"/><line x1="43.05" y1="156" x2="43.05" y2="184" stroke="#d9a441" stroke-width="1.1"/><path d="M 43.05 156 A 9 28 0 0 1 52 184" fill="none" stroke="#d9a441" stroke-width="0.5" stroke-dasharray="2 1.5"/>
+  <rect x="41" y="112" width="23" height="2.4" fill="#8a4b32"/><line x1="41" y1="113.2" x2="64" y2="113.2" stroke="#c97b52" stroke-width="0.5"/><line x1="44" y1="158" x2="44" y2="182" stroke="#0d1b2a" stroke-width="1.8"/>
   <!-- maintenance tunnel H-X -->
   <path d="M 32 170 Q 60.5 244 89 170" fill="none" stroke="#33506b" stroke-width="9" opacity="0.35"/>
   <path d="M 32 170 Q 60.5 244 89 170" fill="none" stroke="#4b647f" stroke-width="0.7" stroke-dasharray="3 2"/>
@@ -264,14 +264,14 @@ function renderB(){const wrap=$('b-nodes');wrap.querySelectorAll('.node').forEac
  const BW=wrap.clientWidth||354;const px=v=>Math.round(v/100*BW);
  for(const k in B_NODES){const d=document.createElement('div');d.className='node'+(bPath.includes(k)?' sel':'');d.style.left=B_NODES[k][0]+'%';d.style.top=B_NODES[k][1]+'px';d.innerHTML='<b>'+k+'</b><div class="nname">'+B_NAMES[k]+'</div>';d.onclick=()=>tapNode(k);wrap.appendChild(d);}
  const COST_POS={'P-H':[21.5,204],'H-U':[32,115],'H-L':[43,204],'U-V':[53,60],'L-V':[64,115],'V-X':[81.5,115],'H-X':[60.5,212]};
- const BLOCKERS=[['U-L','🧱 耐火壁',43,112],['P-U','階違い',18,106],['H-V','直通なし',52,94],['L-X','🚧 通路なし',71.5,146]];
+ const BLOCKERS=[['U-L','🧱 耐火壁',48,124],['P-U','階違い',18,106],['H-V','直通なし',52,94],['L-X','🚧 通路なし',71.5,146]];
  for(const bk of BLOCKERS){const c=document.createElement('div');c.className='blockchip';c.style.left=bk[2]+'%';c.style.top=bk[3]+'px';c.textContent=bk[1];wrap.appendChild(c);}
  for(const k in B_EDGES){const c=document.createElement('div');c.className='costchip';c.style.left=COST_POS[k][0]+'%';c.style.top=COST_POS[k][1]+'px';c.textContent=B_EDGES[k][0];wrap.appendChild(c);}
  const svg=$('b-svg');let lines='';
 for(const k in B_EDGES){const[a,b]=k.split('-');const A=B_NODES[a],B=B_NODES[b];
 if(k==='H-X'){lines+=`<path d="M ${px(A[0])} ${A[1]+20} Q ${px((A[0]+B[0])/2)} 244 ${px(B[0])} ${B[1]+20}" fill="none" stroke="#33506b" stroke-width="2"/>`;}
 else{lines+=`<line x1="${A[0]}%" y1="${A[1]+20}" x2="${B[0]}%" y2="${B[1]+20}" stroke="#33506b" stroke-width="2"/>`;}}
-lines+=`<line x1="32%" y1="60" x2="54%" y2="170" stroke="#8a4b32" stroke-width="7" stroke-dasharray="10 6" opacity="0.9"/>`;
+
 const draw=(path,col)=>{for(let i=0;i<path.length-1;i++){const a=B_NODES[path[i]],b=B_NODES[path[i+1]];const key=edgeKey(path[i],path[i+1]);
 if(key==='H-X'){lines+=`<path d="M ${px(a[0])} ${a[1]+20} Q ${px((a[0]+b[0])/2)} 244 ${px(b[0])} ${b[1]+20}" fill="none" stroke="${col}" stroke-width="3"/>`;}
 else{lines+=`<line x1="${a[0]}%" y1="${a[1]+20}" x2="${b[0]}%" y2="${b[1]+20}" stroke="${col}" stroke-width="3"/>`;}}};
