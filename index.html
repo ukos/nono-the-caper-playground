@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-<title>THE CAPER — prototype v0.29</title>
+<title>THE CAPER — prototype v0.30</title>
 <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
 <link rel="apple-touch-icon" sizes="180x180" href="assets/icon-180.png">
 <link rel="manifest" href="manifest.webmanifest">
@@ -26,7 +26,7 @@
   button.primary{background:var(--brass);color:#23180a;font-weight:700}
   #scr-select .card{text-align:left}
   #scr-select .card button{display:block;width:100%;margin:4px 0;text-align:left;white-space:nowrap;box-sizing:border-box}
-  #scr-select>button{display:block;width:100%;margin:4px 0;text-align:left;white-space:nowrap;box-sizing:border-box}
+  #scr-select>button{display:block;width:calc(100% - 32px);margin:4px 16px;text-align:left;white-space:nowrap;box-sizing:border-box}
   @media (max-width:330px){#scr-select .card button{font-size:14px}}
   .screen{display:none}.screen.on{display:block}
   #logo{width:100%;border-radius:10px;border:2px solid #2b435c}
@@ -76,7 +76,7 @@
     <div class="card" style="text-align:center">
       <div class="big">世界が壊れる前に盗め！</div>
       <button class="primary" onclick="go('scr-select')">▶ 作戦を選ぶ</button>
-      <div class="ver">prototype v0.29 / 作戦選択のボタンを全幅・左詰め・1行に統一</div>
+      <div class="ver">prototype v0.30 / 作戦選択の戻るボタンの幅もミッションボタンと完全一致に調整</div>
     </div>
   </section>
 
