@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-<title>THE CAPER — prototype v0.23</title>
+<title>THE CAPER — prototype v0.24</title>
 <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
 <link rel="apple-touch-icon" sizes="180x180" href="assets/icon-180.png">
 <link rel="manifest" href="manifest.webmanifest">
@@ -77,7 +77,8 @@
       <button class="primary" onclick="setMis(4)">M4「氷下の原子力研究基地」</button>
       <button class="primary" onclick="setMis(5)">M5「海上データ要塞」</button>
       <button class="primary" onclick="setMis(6)">M6「欧州中央銀行地下金庫」</button>
-      <div class="ver">prototype v0.23 / M6「欧州中央銀行地下金庫」を追加（顔認証・レーザー網・制限付き脱出）</div>
+      <button class="primary" onclick="setMis(7)">M7「ジャングル奥地の通信施設」</button>
+      <div class="ver">prototype v0.24 / M7「ジャングル奥地の通信施設」を追加（不確定コスト・ジャガー巡回・周波数コード）</div>
     </div>
   </section>
 
@@ -101,7 +102,7 @@
     <div class="card"><b>A. 情報収集パズル</b>（情報理論）— 質問3回で夜の体制8候補を1つに特定する。<br>
       <button onclick="startA()">A に挑む</button></div>
     <div class="card"><b>B. ネットワーク構築ゲーム</b>（グラフ理論）— 侵入路と脱出路を設計する。<br>
-      <button onclick="startB(0)">M1 中央銀行</button> <button onclick="startB(1)">M2 美術館</button> <button onclick="startB(2)">M3 港の倉庫</button> <button onclick="startB(3)">S3 王宮</button> <button onclick="startB(4)">S4 氷下基地</button> <button onclick="startB(5)">S5 海上要塞</button> <button onclick="startB(6)">S6 欧州中銀</button></div>
+      <button onclick="startB(0)">M1 中央銀行</button> <button onclick="startB(1)">M2 美術館</button> <button onclick="startB(2)">M3 港の倉庫</button> <button onclick="startB(3)">S3 王宮</button> <button onclick="startB(4)">S4 氷下基地</button> <button onclick="startB(5)">S5 海上要塞</button> <button onclick="startB(6)">S6 欧州中銀</button> <button onclick="startB(7)">S7 密林施設</button></div>
     <div class="card" id="d-card" style="display:none"><b>D. 道具の詰め込み</b>（NP困難：ナップサック）— 容量10に収まるよう道具と金品を選ぶ。最適でなくても確定できるが、価値が収穫評価になる。<br>
       <button onclick="startD()">D に挑む</button></div>
     <div class="card mut">ルール： 下見は <b>最低1つクリア</b> しないと実行に入れない。全部やると実行が楽になるが、調査コストが開始警戒度に乗る。</div>
@@ -224,7 +225,7 @@ const S = {
 const $=id=>document.getElementById(id);
 const POSE={idle:'assets/second-idle.png','walk-a':'assets/second-walk-a.png','walk-b':'assets/second-walk-b.png',sneak:'assets/second-sneak.png',crouch:'assets/second-crouch.png',operate:'assets/second-operate.png',reach:'assets/second-reach.png',carry:'assets/second-carry.png'};
 function go(id){document.querySelectorAll('.screen').forEach(e=>e.classList.remove('on'));$(id).classList.add('on');}
-const ART={bg1:'assets/media-generation-caper-s1-bg-vault-0-ebef1d7b-8c05-437f-a7f4-de49e3df6f73.webp',kv2:'assets/media-generation-caper-s2-kv-museum-0-d26e5a86-3f71-4d8f-bc44-bce891882765.webp',bg2:'assets/media-generation-caper-s2-bg-gallery-0-f869ee66-0c67-4188-bc3b-447d02e137e1.webp',kv3:'assets/media-generation-caper-s3-kv-palace-0-15266ee3-1856-4271-8f45-30874ae2b8fd.webp',bg3:'assets/media-generation-caper-s3-bg-vault-0-93a168f4-4828-494d-82fd-672d44d239c1.webp',kv4:'assets/media-generation-caper-s4-kv-icebase-0-5b9c1e66-48aa-4c35-a4d3-d9c3de06b5ab.webp',bg4:'assets/media-generation-caper-s4-bg-lab-0-25c8386e-191f-440d-b3fc-3b93a2a6083e.webp',kv5:'assets/media-generation-caper-s5-kv-platform-0-d8158c95-abb4-4382-bdb4-0bad2752ec7f.webp',bg5:'assets/media-generation-caper-s5-bg-server-0-9b074aca-f845-4f53-b56c-1f768964e3e9.webp',kv6:'assets/media-generation-caper-s6-kv-bank-0-8761ccee-ea4d-47b7-b314-88eabbdca530.webp',bg6:'assets/media-generation-caper-s6-bg-vault-0-d6294697-49aa-4c21-a5eb-722c46b5bc84.webp'};
+const ART={bg1:'assets/media-generation-caper-s1-bg-vault-0-ebef1d7b-8c05-437f-a7f4-de49e3df6f73.webp',kv2:'assets/media-generation-caper-s2-kv-museum-0-d26e5a86-3f71-4d8f-bc44-bce891882765.webp',bg2:'assets/media-generation-caper-s2-bg-gallery-0-f869ee66-0c67-4188-bc3b-447d02e137e1.webp',kv3:'assets/media-generation-caper-s3-kv-palace-0-15266ee3-1856-4271-8f45-30874ae2b8fd.webp',bg3:'assets/media-generation-caper-s3-bg-vault-0-93a168f4-4828-494d-82fd-672d44d239c1.webp',kv4:'assets/media-generation-caper-s4-kv-icebase-0-5b9c1e66-48aa-4c35-a4d3-d9c3de06b5ab.webp',bg4:'assets/media-generation-caper-s4-bg-lab-0-25c8386e-191f-440d-b3fc-3b93a2a6083e.webp',kv5:'assets/media-generation-caper-s5-kv-platform-0-d8158c95-abb4-4382-bdb4-0bad2752ec7f.webp',bg5:'assets/media-generation-caper-s5-bg-server-0-9b074aca-f845-4f53-b56c-1f768964e3e9.webp',kv6:'assets/media-generation-caper-s6-kv-bank-0-8761ccee-ea4d-47b7-b314-88eabbdca530.webp',bg6:'assets/media-generation-caper-s6-bg-vault-0-d6294697-49aa-4c21-a5eb-722c46b5bc84.webp',kv7:'assets/media-generation-caper-s7-kv-jungle-0-06c30098-e2af-402b-938e-9e071af444e9.webp',bg7:'assets/media-generation-caper-s7-bg-comms-0-33b11aef-b9e5-496a-a5bf-befb7e521747.webp'};
 const MISSIONS={
  1:{name:'M1「中央銀行の夜」',par:57,bg:ART.bg1,art:ART.bg1,
    brief:`SECOND へ。中央銀行、地下金庫。狙いは<b class="gold">介入計画書</b>ひとつ。<br>明朝6時、その計画が発動すれば通貨危機は隣国へ飛び火し、紛争の火種になる。<br>計画書を盗み出せ。WATCH が事前に公表させれば、危機は回避できる。<br><span class="mut">――世界はまだ、何も知らない。</span>`,
@@ -249,7 +250,11 @@ const MISSIONS={
  6:{name:'M6「欧州中央銀行地下金庫」',par:63,bg:ART.bg6,art:ART.kv6,escLimit:19,
    brief:`SECOND へ。欧州中央銀行の地下金庫。狙いは金塊ではない。<b class="gold">極秘取引記録（裏帳簿）</b>だ。<br>金融界の一部勢力が、国家崩壊を利用して利益を得ようとしている。その証拠が大金庫に眠る。<br>顔認証、レーザー網、多重の歯車錠。――王道の金庫破りだ。<br><span class="mut">――金には触るな。紙を盗め。</span>`,
    deb:`裏帳簿は WATCH の手に渡った。国家崩壊で儲ける仕組みは、白日の下に晒されるだろう。<br>だが帳簿の中には、WATCH らしい資金の流れがあった。誰の金が、誰の危機を買っていたのか。<br>そして今回も、公表の段取りは驚くほど整っていた。`,
-   r1:'顔認証室。主任の顔データを組み立てて、認証を通す。コンソールを操作しよう。',r2:'大金庫前の通路。レーザー網が4手周期で点滅している。光っているマスに入ると探知される。タイミングを読んで渡れ。',r3:'大金庫。歯車盤の奥に裏帳簿がある。コンソールを操作しよう。',esc:'裏帳簿を手に脱出。レーザー網を逆向きに渡る。警報の予備電源が落ちるまで、制限は19手だ。',fpMsg:'⚠ レーザーに触れたが、偽装IDカードが警報を1回だけ握りつぶした！ 警戒度+1（この手は一度きり）。',doc:'裏帳簿'}
+   r1:'顔認証室。主任の顔データを組み立てて、認証を通す。コンソールを操作しよう。',r2:'大金庫前の通路。レーザー網が4手周期で点滅している。光っているマスに入ると探知される。タイミングを読んで渡れ。',r3:'大金庫。歯車盤の奥に裏帳簿がある。コンソールを操作しよう。',esc:'裏帳簿を手に脱出。レーザー網を逆向きに渡る。警報の予備電源が落ちるまで、制限は19手だ。',fpMsg:'⚠ レーザーに触れたが、偽装IDカードが警報を1回だけ握りつぶした！ 警戒度+1（この手は一度きり）。',doc:'裏帳簿'},
+ 7:{name:'M7「ジャングル奥地の通信施設」',par:56,bg:ART.bg7,art:ART.kv7,
+   brief:`SECOND へ。南米、ジャングル奥地の通信施設。狙いは<b class="gold">軍事衛星制御コード</b>だ。<br>テロ組織が複数国家へ偽情報を流し、世界を混乱に陥れようとしている。配信の元栓を閉めろ。<br>密林では、ジャガーが警備員だ。<br><span class="mut">――音を立てるな。奴は耳で見る。</span>`,
+   deb:`衛星制御コードは WATCH の手に渡った。偽情報の配信網は断たれるだろう。<br>だが配信元リストの中に、WATCH の中継局があった。誰が WATCH の施設を、テロリストに貸したのか。<br>そして今回も、公表の段取りは驚くほど整っていた。`,
+   r1:'通信室の扉の前に立った。衛星リンクの周波数コードを照合する。コンソールを操作しよう。',r2:'密林の通路。ジャガーが巡回している。視線は前方3マスと長いが、大木・茂みに遮られる。陰を使え。',r3:'衛星制御室。制御盤の奥に制御コードがある。コンソールを操作しよう。',esc:'脱出。ジャガーはまだ縄張りを回っている。位相はずれている。左端のボートへ。',fpMsg:'⚠ ジャガーに見つかったが、肉の囮に気を取られた！ 警戒度+1（この手は一度きり）。',doc:'衛星制御コード'}
 };
 function setMis(n){S.mis=n;S.aClear=false;S.bClear=false;S.dClear=false;S.reconCost=0;S.facts={wing:false,guards:false,patrol:false};S.routeIn=null;S.routeOut=null;S.pack=[];S.dValue=0;S.tools={smoke:false,glass:false,battery:false,disguise:false,jammer:false};
  $('brief-body').innerHTML=MISSIONS[n].brief;$('brief-art').src=MISSIONS[n].art;
@@ -329,6 +334,12 @@ const A_QSETS={
  {id:'guards', q:'「警備主任は1名か」', a:'情報屋「そうだ、主任は1名だけだ」', fact:'guards', label:'主任は1名'},
  {id:'patrol', q:'「レーザーは4手周期か」', a:'情報屋「その通り、4手で一巡りだ」', fact:'patrol', label:'レーザーは4手周期'},
  {id:'trap', q:'「総裁室の場所は」', a:'情報屋「…そんなもの、知るわけがない」', fact:null, label:null}
+],
+7:[
+ {id:'wing', q:'「吊り橋は無事か」', a:'情報屋「いや、損傷している。渡るのに手間取るぞ」', fact:'wing', label:'吊り橋は損傷（コスト確定）'},
+ {id:'guards', q:'「衛星技師は2名か」', a:'情報屋「そうだ、技師は2名だ」', fact:'guards', label:'技師は2名'},
+ {id:'patrol', q:'「ジャガーは東側から回るか」', a:'情報屋「その通り、東側から縄張りを回る」', fact:'patrol', label:'ジャガーは東から'},
+ {id:'trap', q:'「村長の家の場所は」', a:'情報屋「…そんなもの、知るわけがない」', fact:null, label:null}
 ]};
 const A_QS_GET=()=>A_QSETS[S.mis];
 let aLeft=3,aCand=8,aUsed=[];
@@ -466,7 +477,26 @@ const MAPS=[
 <rect x="77" y="126" width="16" height="88" fill="rgba(74,163,255,0.08)" stroke="#3d5a76" stroke-width="0.7"/>
 <path d="M 9 170 Q 47 244 86 170" fill="none" stroke="#33506b" stroke-width="9" opacity="0.35"/>
 <path d="M 9 170 Q 47 244 86 170" fill="none" stroke="#4aa3ff" stroke-width="0.7" stroke-dasharray="3 2"/>
-<line x1="27" y1="104" x2="30" y2="104" stroke="#0a1420" stroke-width="1.8"/><line x1="45" y1="104" x2="48" y2="104" stroke="#0a1420" stroke-width="1.8"/><line x1="65" y1="104" x2="68" y2="104" stroke="#0a1420" stroke-width="1.8"/><line x1="65" y1="126" x2="68" y2="126" stroke="#0a1420" stroke-width="1.8"/>`,labels:`<div class="planlabel" style="left:47%;top:221px;font-size:9px;color:#7f95ab;transform:translateX(-50%)">搬入トンネル</div><div class="planlabel" style="left:79%;top:8px;font-size:10px;color:#d9a441">大金庫</div>`}
+<line x1="27" y1="104" x2="30" y2="104" stroke="#0a1420" stroke-width="1.8"/><line x1="45" y1="104" x2="48" y2="104" stroke="#0a1420" stroke-width="1.8"/><line x1="65" y1="104" x2="68" y2="104" stroke="#0a1420" stroke-width="1.8"/><line x1="65" y1="126" x2="68" y2="126" stroke="#0a1420" stroke-width="1.8"/>`,labels:`<div class="planlabel" style="left:47%;top:221px;font-size:9px;color:#7f95ab;transform:translateX(-50%)">搬入トンネル</div><div class="planlabel" style="left:79%;top:8px;font-size:10px;color:#d9a441">大金庫</div>`},
+{name:'S7「ジャングル奥地の通信施設」',S:'A',T:'G',X:'H',arc:'A-H',
+ nodes:{A:[9,150],B:[28,150],C:[26,40],D:[46,150],E:[44,40],F:[64,150],G:[66,40],H:[86,150]},
+ names:{A:'河岸の上陸地点',B:'密林の小道',C:'吊り橋',D:'滝裏の洞窟',E:'中継アンテナ',F:'通信施設入口',G:'衛星制御室',H:'ボート乗り場'},
+ edges:{'A-B':[2,'低'],'B-C':[2,'低'],'B-D':[3,'中'],'C-E':[2,'低'],'D-E':[3,'低'],'C-F':[4,'中'],'E-F':[2,'低'],'E-G':[3,'中'],'F-G':[2,'高'],'F-H':[2,'低'],'D-F':[3,'中'],'A-H':[6,'中']},
+ costPos:{'A-B':[18,206],'B-C':[27,100],'B-D':[37,206],'C-E':[35,30],'D-E':[45,100],'C-F':[40,124],'E-F':[54,88],'E-G':[55,30],'F-G':[65,100],'F-H':[75,206],'D-F':[55,206],'A-H':[47,212]},
+ blockers:[['A-C','断崖',18,100],['B-E','直通なし',36,100],['C-H','直通なし',56,100],['D-G','通路なし',58,124]],
+ noEdge:{'A-C':'上陸地点と吊り橋の間は断崖で、直接は渡れない','B-E':'密林の小道から中継アンテナへの直通路はない','C-H':'吊り橋からボート乗り場への直通路はない','D-G':'滝裏の洞窟から衛星制御室への通路はない','D-H':'滝裏の洞窟からボート乗り場への直通路はない','A-D':'上陸地点から洞窟への直通路はない（小道経由のみ）','A-E':'上陸地点から中継アンテナへの直通路はない','A-F':'上陸地点から通信施設入口への直通路はない','A-G':'衛星制御室は施設の最奥で、入口からの直通路はない','B-F':'密林の小道から通信施設入口への直通路はない','B-G':'密林の小道から衛星制御室への直通路はない','B-H':'密林の小道からボート乗り場への直通路はない','C-D':'吊り橋と洞窟は川で隔てられ、直接は行き来できない','C-G':'吊り橋から衛星制御室への直通路はない','E-H':'中継アンテナからボート乗り場への直通路はない','G-H':'衛星制御室からボート乗り場への直通路はない（施設入口を経由する）'},
+ defReason:'この2地点を直接つなぐ通路はない',uncertain:{'C-F':{label:'2〜5',fact:'wing'}},
+ plan:`<rect x="0" y="0" width="100" height="238" fill="#0a1a12"/><g stroke="#1d4030" stroke-width="0.4"><line x1="0" y1="60" x2="100" y2="60"/><line x1="0" y1="120" x2="100" y2="120"/><line x1="0" y1="180" x2="100" y2="180"/><line x1="25" y1="0" x2="25" y2="238"/><line x1="50" y1="0" x2="50" y2="238"/><line x1="75" y1="0" x2="75" y2="238"/></g>
+<rect x="17" y="16" width="18" height="88" fill="#123324" stroke="#4b7f5f" stroke-width="0.7"/>
+<rect x="35" y="16" width="18" height="88" fill="#123324" stroke="#4b7f5f" stroke-width="0.7"/>
+<rect x="57" y="16" width="18" height="88" fill="rgba(217,164,65,0.08)" stroke="#d9a441" stroke-width="1.4"/>
+<rect x="19" y="126" width="18" height="88" fill="rgba(74,163,255,0.05)" stroke="#4b647f" stroke-width="0.7"/>
+<rect x="37" y="126" width="18" height="88" fill="#123324" stroke="#4b7f5f" stroke-width="0.7"/>
+<rect x="55" y="126" width="18" height="88" fill="#123324" stroke="#4b7f5f" stroke-width="0.7"/>
+<rect x="77" y="126" width="16" height="88" fill="rgba(74,163,255,0.08)" stroke="#3d5a76" stroke-width="0.7"/>
+<path d="M 9 170 Q 47 244 86 170" fill="none" stroke="#33506b" stroke-width="9" opacity="0.35"/>
+<path d="M 9 170 Q 47 244 86 170" fill="none" stroke="#4aa3ff" stroke-width="0.7" stroke-dasharray="3 2"/>
+<line x1="27" y1="104" x2="30" y2="104" stroke="#0a1a12" stroke-width="1.8"/><line x1="45" y1="104" x2="48" y2="104" stroke="#0a1a12" stroke-width="1.8"/><line x1="65" y1="104" x2="68" y2="104" stroke="#0a1a12" stroke-width="1.8"/><line x1="65" y1="126" x2="68" y2="126" stroke="#0a1a12" stroke-width="1.8"/>`,labels:`<div class="planlabel" style="left:47%;top:221px;font-size:9px;color:#7f95ab;transform:translateX(-50%)">河川ルート</div><div class="planlabel" style="left:1.2%;top:8px;font-size:10px;color:#4aa3ff">川</div>`}
 ];
 let curMap=0;const M=()=>MAPS[curMap];
 function noEdgeReason(a,b){const m=M();return m.noEdge[a+'-'+b]||m.noEdge[b+'-'+a]||m.defReason;}
@@ -474,14 +504,14 @@ let bPath=[],bPhase=1,bIn=null,PAR_IN=0,PAR_OUT=0;
 function edgeKey(a,b){const E=M().edges;return E[a+'-'+b]?a+'-'+b:(E[b+'-'+a]?b+'-'+a:null);}
 function startB(i){curMap=i;const m=M();bPath=[m.S];bPhase=1;bIn=null;PAR_IN=optCost(m.S,m.T,m.X);PAR_OUT=optCost(m.T,m.X,m.S);
  $('b-plan').innerHTML=m.plan;$('b-labels').innerHTML=m.labels;$('b-mapname').textContent=m.name;
- $('b-howto').innerHTML='<b>遊び方（経路設計ゲーム）</b><br> '+m.S+'（'+m.names[m.S]+'）から '+m.T+'（'+m.names[m.T]+'）へ、続いて '+m.T+' から '+m.X+'（'+m.names[m.X]+'）へ、<b>最安コスト</b>で道をつなぐこと。<b>最安でないと確定しない</b>（最安コストは見出しに表示）。コスト合計は実行フェーズの所要手数になるので、小さいほど有利。<br> 進めるのは<b>線でつながっている地点の間だけ</b>。画面の見た目で近くや斜めにあっても、線がなければ通れない（線の有無がすべて）。線のそばの数字がその道のコスト。同じ地点は2度通らない。間違えたら「1つ戻す」で1手戻れる。<br>侵入路は脱出口（'+m.X+'）を通らない。脱出路は侵入口（'+m.S+'）を通らない。相手フェーズの端点は薄く表示され、選べない。<br>赤いチップ（🧱耐火壁・階違い・通路なし等）のある間は、物理的に通れない場所。';
+ $('b-howto').innerHTML='<b>遊び方（経路設計ゲーム）</b><br> '+m.S+'（'+m.names[m.S]+'）から '+m.T+'（'+m.names[m.T]+'）へ、続いて '+m.T+' から '+m.X+'（'+m.names[m.X]+'）へ、<b>最安コスト</b>で道をつなぐこと。<b>最安でないと確定しない</b>（最安コストは見出しに表示）。コスト合計は実行フェーズの所要手数になるので、小さいほど有利。<br> 進めるのは<b>線でつながっている地点の間だけ</b>。画面の見た目で近くや斜めにあっても、線がなければ通れない（線の有無がすべて）。線のそばの数字がその道のコスト。同じ地点は2度通らない。間違えたら「1つ戻す」で1手戻れる。<br>侵入路は脱出口（'+m.X+'）を通らない。脱出路は侵入口（'+m.S+'）を通らない。相手フェーズの端点は薄く表示され、選べない。<br>赤いチップ（🧱耐火壁・階違い・通路なし等）のある間は、物理的に通れない場所。'+(m.uncertain?'<br>🧩 コストが「2〜5」のように幅で表示されている道は、状態が未確認（未確定）。下見Aで状態を掴むと確定する。情報なしで賭けることもできる。':'');
  renderB();go('scr-b');}
 MAPS[0].plan=$('b-plan').innerHTML;MAPS[0].labels=$('b-labels').innerHTML;
 function renderB(){const wrap=$('b-nodes');wrap.querySelectorAll('.node').forEach(n=>n.remove());wrap.querySelectorAll('.costchip').forEach(n=>n.remove());wrap.querySelectorAll('.blockchip').forEach(n=>n.remove());
  const BW=wrap.clientWidth||354;const px=v=>Math.round(v/100*BW);
  for(const k in M().nodes){const d=document.createElement('div');d.className='node'+(bPath.includes(k)?' sel':(bIn&&bIn.includes(k))?' done':(((bPhase===1&&k===M().X)||(bPhase===2&&k===M().S))?' off':''));d.style.left=M().nodes[k][0]+'%';d.style.top=M().nodes[k][1]+'px';d.innerHTML='<b>'+k+'</b><div class="nname">'+M().names[k]+'</div>';d.onclick=()=>tapNode(k);wrap.appendChild(d);}
  for(const bk of M().blockers){const c=document.createElement('div');c.className='blockchip';c.style.left=bk[2]+'%';c.style.top=bk[3]+'px';c.textContent=bk[1];wrap.appendChild(c);}
- for(const k in M().edges){const c=document.createElement('div');c.className='costchip';c.style.left=M().costPos[k][0]+'%';c.style.top=M().costPos[k][1]+'px';c.textContent=M().edges[k][0];wrap.appendChild(c);}
+ for(const k in M().edges){const c=document.createElement('div');c.className='costchip';c.style.left=M().costPos[k][0]+'%';c.style.top=M().costPos[k][1]+'px';const un=M().uncertain&&M().uncertain[k];c.textContent=(un&&!S.facts[un.fact])?un.label:M().edges[k][0];wrap.appendChild(c);}
  const svg=$('b-svg');let lines='';
 for(const k in M().edges){const[a,b]=k.split('-');const A=M().nodes[a],B=M().nodes[b];
 if(k===M().arc){lines+=`<path d="M ${px(A[0])} ${A[1]+20} Q ${px((A[0]+B[0])/2)} 244 ${px(B[0])} ${B[1]+20}" fill="none" stroke="#33506b" stroke-width="2"/>`;}
@@ -558,7 +588,15 @@ const D_SETS={
  {id:'goldbar',name:'金の延べ棒',w:5,v:12,fx:'金品'},
  {id:'platcoin',name:'プラチナ硬貨',w:3,v:8,fx:'金品'},
  {id:'diamond',name:'ダイヤの原石',w:4,v:10,fx:'金品'},
- {id:'silverbar',name:'銀のインゴット',w:2,v:5,fx:'金品'}]}};
+ {id:'silverbar',name:'銀のインゴット',w:2,v:5,fx:'金品'}]},
+7:{caseName:'密林ケース',items:[
+ {id:'decoy',name:'肉の囮',w:3,v:4,tool:'jammer',fx:'ジャガーに見つかっても1回だけ見逃される'},
+ {id:'smoke3',name:'煙幕弾',w:2,v:3,tool:'smoke',fx:'部屋1の失敗ペナルティを1回無効'},
+ {id:'battery',name:'予備バッテリー',w:2,v:4,tool:'battery',fx:'部屋3に最短手数の目安を表示'},
+ {id:'emerald',name:'エメラルド原石',w:4,v:6,fx:'金品'},
+ {id:'goldore',name:'金の鉱石',w:5,v:9,fx:'金品'},
+ {id:'ivory',name:'象牙細工',w:3,v:11,fx:'金品'},
+ {id:'ruby',name:'ルビー',w:1,v:1,fx:'金品'}]}};
 const D_ITEMS_GET=()=>D_SETS[S.mis].items;
 let dSel=new Set();
 function startD(){dSel=new Set(S.pack);renderD();go('scr-d');}
@@ -573,8 +611,8 @@ function confirmD(){S.pack=[...dSel];S.dValue=D_ITEMS_GET().filter(i=>dSel.has(i
  S.dClear=true;syncRecon();go('scr-recon');}
 // ---------- Execution ----------
 const ROOM_W={1:12,2:14,3:12};
-const PATROL={1:{w:14,seq:[8,9,10,9,8,7],face:[1,1,1,-1,-1,-1],pillars:[4,7,11],escGs:3},3:{w:16,seq:[6,7,8,9,10,11,10,9,8,7],face:[1,1,1,1,1,-1,-1,-1,-1,-1],pillars:[2,5,10],escGs:5},4:{w:15,seq:[5,6,7,8,9,10,9,8,7,6],face:[1,1,1,1,1,-1,-1,-1,-1,-1],pillars:[3,8,9],escGs:5,sense:true},5:{w:13,seq:[4,5,6,7,8,7,6,5],face:[1,1,1,1,-1,-1,-1,-1],pillars:[2,6,10],escGs:1,visLen:1,drone:true},6:{w:16,seq:[0,0,0,0],face:[1,1,1,1],pillars:[],escGs:2,laser:true,cycle:4,gates:{4:[0],8:[2],12:[0]}}};
-function visCells(){const p=P();const gi=p.seq[S.guardStep%p.seq.length];if(p.sense){const v=[];for(const d of[-1,1])for(let k=1;k<=2;k++){const c=gi+d*k;if(c<0||c>=p.w||p.pillars.includes(c))break;v.push(c);}return v;}const gf=p.face[S.guardStep%p.seq.length];const vl=p.visLen||2;const v=[];for(let k=1;k<=vl;k++)v.push(gi+gf*k);return v;}
+const PATROL={1:{w:14,seq:[8,9,10,9,8,7],face:[1,1,1,-1,-1,-1],pillars:[4,7,11],escGs:3},3:{w:16,seq:[6,7,8,9,10,11,10,9,8,7],face:[1,1,1,1,1,-1,-1,-1,-1,-1],pillars:[2,5,10],escGs:5},4:{w:15,seq:[5,6,7,8,9,10,9,8,7,6],face:[1,1,1,1,1,-1,-1,-1,-1,-1],pillars:[3,8,9],escGs:5,sense:true},5:{w:13,seq:[4,5,6,7,8,7,6,5],face:[1,1,1,1,-1,-1,-1,-1],pillars:[2,6,10],escGs:1,visLen:1,drone:true},6:{w:16,seq:[0,0,0,0],face:[1,1,1,1],pillars:[],escGs:2,laser:true,cycle:4,gates:{4:[0],8:[2],12:[0]}},7:{w:15,seq:[4,5,6,7,8,9,10,9,8,7,6,5],face:[1,1,1,1,1,1,-1,-1,-1,-1,-1,-1],pillars:[2,6,11],escGs:6,visLen:3,blockVis:true,beast:true}};
+function visCells(){const p=P();const gi=p.seq[S.guardStep%p.seq.length];if(p.sense){const v=[];for(const d of[-1,1])for(let k=1;k<=2;k++){const c=gi+d*k;if(c<0||c>=p.w||p.pillars.includes(c))break;v.push(c);}return v;}const gf=p.face[S.guardStep%p.seq.length];const vl=p.visLen||2;const v=[];for(let k=1;k<=vl;k++){const c=gi+gf*k;if(p.blockVis&&(c<0||c>=p.w||p.pillars.includes(c)))break;v.push(c);}return v;}
 const P=()=>PATROL[S.mis]||PATROL[1];
 const RW=()=>S.room===2&&PATROL[S.mis]?P().w:ROOM_W[S.room];
 function startExec(){S.alert=S.reconCost;S.steps=0;S.room=1;S.px=0;S.hist=[];S.gears=(typeof GEARCFG!=='undefined'&&GEARCFG[S.mis])?[...GEARCFG[S.mis].start]:[1,2,3];S.gearSteps=0;S.vaultOpen=false;S.loot=false;S.hasDoc=false;S.escape=false;S.guardStep=0;
@@ -594,10 +632,11 @@ function renderRoom(msg){const t=$('track');const w=RW();let h='<div class="floo
     if(S.facts.patrol){for(let k=1;k<=3;k++){const gp=P().seq[(S.guardStep+k)%P().seq.length];h+=`<div class="sensor" style="left:${cellX(gp,w)};opacity:.3">📡</div>`;}}
     visCells().forEach(c=>{h+=`<div class="guardvis" style="left:${cellX(c,w)};width:${(100/w)}%"></div>`;});
     h+=`<div class="sensor" style="left:${cellX(gi,w)}">📡</div>`;}
-   else if(P().drone){
-    if(S.facts.patrol){for(let k=1;k<=3;k++){const gp=P().seq[(S.guardStep+k)%P().seq.length];h+=`<div class="sensor" style="left:${cellX(gp,w)};opacity:.3">🛸</div>`;}}
-    const vv=visCells();h+=`<div class="guardvis" style="left:${cellX(Math.min(...vv),w)};width:${(vv.length*100/w)}%"></div>`;
-    h+=`<div class="sensor" style="left:${cellX(gi,w)}">🛸</div>`;}
+   else if(P().drone||P().beast){
+    const icon=P().drone?'🛸':'🐆';
+    if(S.facts.patrol){for(let k=1;k<=3;k++){const gp=P().seq[(S.guardStep+k)%P().seq.length];h+=`<div class="sensor" style="left:${cellX(gp,w)};opacity:.3">${icon}</div>`;}}
+    const vv=visCells();if(vv.length)h+=`<div class="guardvis" style="left:${cellX(Math.min(...vv),w)};width:${(vv.length*100/w)}%"></div>`;
+    h+=`<div class="sensor" style="left:${cellX(gi,w)}">${icon}</div>`;}
    else if(P().laser){
     for(const cell in P().gates){const hot=P().gates[cell].includes(S.guardStep%P().cycle);h+=`<div style="position:absolute;top:4px;bottom:28px;left:${cell*(100/w)+(50/w)}%;width:3px;background:#ff5252;opacity:${hot?1:.22};box-shadow:0 0 ${hot?8:0}px #ff5252"></div>`;}}
    else{
@@ -612,13 +651,14 @@ function renderRoom(msg){const t=$('track');const w=RW();let h='<div class="floo
  t.innerHTML=h;
  $('hud-alert').textContent=S.alert;$('hud-steps').textContent=S.steps;
  if(msg)$('ex-msg').innerHTML=msg;
- const RN={1:{1:'部屋1：配電室',2:'部屋2：金庫前通路',3:'部屋3：金庫'},2:{1:'部屋1：展示室の扉',2:'部屋2：反転ギャラリー',3:'部屋3：特別展示室'},3:{1:'部屋1：宝物庫前室',2:'部屋2：回廊',3:'部屋3：宝物庫'},4:{1:'部屋1：制御室',2:'部屋2：振動探知区画',3:'部屋3：データ保管庫'},5:{1:'部屋1：管制室',2:'部屋2：サーバーデッキ',3:'部屋3：コアサーバー室'},6:{1:'部屋1：顔認証室',2:'部屋2：レーザー通路',3:'部屋3：大金庫'}}[S.mis];
+ const RN={1:{1:'部屋1：配電室',2:'部屋2：金庫前通路',3:'部屋3：金庫'},2:{1:'部屋1：展示室の扉',2:'部屋2：反転ギャラリー',3:'部屋3：特別展示室'},3:{1:'部屋1：宝物庫前室',2:'部屋2：回廊',3:'部屋3：宝物庫'},4:{1:'部屋1：制御室',2:'部屋2：振動探知区画',3:'部屋3：データ保管庫'},5:{1:'部屋1：管制室',2:'部屋2：サーバーデッキ',3:'部屋3：コアサーバー室'},6:{1:'部屋1：顔認証室',2:'部屋2：レーザー通路',3:'部屋3：大金庫'},7:{1:'部屋1：通信室',2:'部屋2：密林の通路',3:'部屋3：衛星制御室'}}[S.mis];
  $('ex-title').textContent='実行フェーズ — '+RN[S.room]+(S.escape?'（脱出）':'')+(S.mis===6&&S.escape&&S.room===2?' 制限あと'+(MISSIONS[6].escLimit-(S.escSteps||0))+'手':'');
  const HOWTO=S.mis===1?{1:'<b>遊び方（条件充足パズル）</b>： コンソールに近づいて「調べる／操作」を押すと、3色の鍵の条件文が出る。すべての条件を同時に満たす順序で鍵を選ぶゲーム。順序を間違えると警戒度+1。',2:'<b>遊び方（巡回読み）</b>： 1手動くごとに警備員も1歩進む。赤い範囲が警備の視界で、その中に入ると警戒度+2で部屋の入口に戻される。柱のあるマスは陰になっていて見つからない。警備の動きを数えながら進むゲーム。',3:'<b>遊び方（操作列パズル）</b>： 歯車盤に近づいて操作する。各レバーは2つの歯車を同時に1目盛り進める。3つの歯車の数字を目標にそろえるゲームで、操作の順序と回数が大事。'}:{1:'<b>遊び方（条件充足パズル）</b>： コンソールに近づいて「調べる／操作」を押すと、4つのスイッチと条件文が出る。すべての条件を同時に満たす組合せにするゲーム。各条件の成否はその場で色表示される。確定時に満たしていない条件があると警戒度+1。',2:'<b>遊び方（空間変形パズル）</b>： 展示室は「反転」で通路の配置が鏡像に入れ替わる。地点をタップして移動し、「調べる／操作」で反転する（反転も1手に数える）。ガラスケース前（C）で扉の鍵を取ってから、特別展示室の扉（T）へ。反転しないと T には届かない。',3:'<b>遊び方（操作列パズル）</b>： 回転展示台のコンソールを操作する。各レバーは2つの台を同時に回す（逆向きに回る台もある）。3台の向きを主錠 [0,0,0] にそろえるゲーム。副錠 [2,2,2] で小金庫も開く。'};
  if(S.mis===3){HOWTO[1]='<b>遊び方（条件充足パズル）</b>： コンソールに近づいて「調べる／操作」を押すと、4つの鍵の条件文が出る。すべての条件を同時に満たす順序で鍵を選ぶゲーム。順序を間違えると警戒度+1。';HOWTO[2]='<b>遊び方（巡回読み）</b>： 1手動くごとに警備も1歩進む。赤い範囲が警備の視界で、その中に入ると警戒度+2で部屋の入口に戻される。柱のあるマスは陰になっていて見つからない。変装セットを持っていると、1回だけ視界に入っても見逃される（警戒度+1）。';HOWTO[3]='<b>遊び方（操作列パズル）</b>： 回転金庫のコンソールを操作する。各レバーは2つのダイヤルを同時に回す（逆向きに回る台もある）。3つのダイヤルを主錠 [0,0,0] にそろえるゲーム。副錠 [2,2,2] で小金庫も開く。';}
  if(S.mis===4){HOWTO[1]='<b>遊び方（条件充足パズル）</b>： コンソールに近づいて「調べる／操作」を押すと、5つのスイッチと条件文が出る。すべての条件を同時に満たす組合せにするゲーム。各条件の成否はその場で色表示される。確定時に満たしていない条件があると警戒度+1。';HOWTO[2]='<b>遊び方（巡回読み・センサー）</b>： 1手動くごとにセンサーも1歩進む。赤い範囲がセンサーの探知範囲で、左右2マスに効く。その中に入ると警戒度+2で部屋の入口に戻される。氷柱・氷壁のあるマスとその陰は探知が届かない。振動吸収ブーツを持っていると、1回だけ探知されても見逃される（警戒度+1）。';HOWTO[3]='<b>遊び方（操作列パズル）</b>： 歯車盤に近づいて操作する。各レバーは2つの歯車を同時に1目盛り進める。3つの歯車の数字を主錠 [0,0,0] にそろえるゲーム。副錠 [2,2,2] で小金庫も開く。';}
  if(S.mis===5){HOWTO[1]='<b>遊び方（条件充足パズル）</b>： コンソールに近づいて「調べる／操作」を押すと、4桁コードの条件文が出る。すべての条件を同時に満たすコードを特定するゲーム。各条件の成否はその場で色表示される。確定時に満たしていない条件があると警戒度+1。';HOWTO[2]='<b>遊び方（空間変形パズル）</b>： デッキは上下2層あり、「調べる／操作」で層を切り替える（切替も1手に数える）。地点をタップして移動し、下層の中継室（C）で暗号鍵を取ってから、上層のコアの扉（T）へ。';HOWTO[3]='<b>遊び方（操作列パズル）</b>： コア制御盤を操作する。各レバーは2つのダイヤルを同時に回す（逆向きに回る台もある）。3つのダイヤルを主錠 [0,0,0] にそろえるゲーム。副錠 [2,2,2] で小金庫も開く。';}
  if(S.mis===6){HOWTO[1]='<b>遊び方（条件充足パズル）</b>： コンソールに近づいて「調べる／操作」を押すと、主任の顔の条件文が出る。すべての条件を同時に満たす顔の組合せを特定するゲーム。各条件の成否はその場で色表示される。確定時に満たしていない条件があると警戒度+1。';HOWTO[2]='<b>遊び方（巡回読み・レーザー）</b>： レーザーゲートは4手周期で点滅する。明るく光っているマスに入ると探知され、警戒度+2で部屋の入口に戻される。タイミングをずらすには、往復の小刻みな移動で周期を調整する。';HOWTO[3]='<b>遊び方（操作列パズル）</b>： 歯車盤に近づいて操作する。各レバーは2つの歯車を同時に1目盛り進める。3つの歯車の数字を主錠 [0,0,0] にそろえるゲーム。副錠 [2,2,2] で小金庫も開く。';}
+ if(S.mis===7){HOWTO[1]='<b>遊び方（条件充足パズル）</b>： コンソールに近づいて「調べる／操作」を押すと、周波数コードの条件文が出る。すべての条件を同時に満たすコードを特定するゲーム。各条件の成否はその場で色表示される。確定時に満たしていない条件があると警戒度+1。';HOWTO[2]='<b>遊び方（巡回読み・ジャガー）</b>： 1手動くごとにジャガーも1歩進む。赤い範囲がジャガーの視線で、前方3マスに届く。その中に入ると警戒度+2で部屋の入口に戻される。大木・茂みのあるマスは陰で、視線は大木に遮られる。肉の囮を持っていると、1回だけ見つかっても見逃される（警戒度+1）。';HOWTO[3]='<b>遊び方（操作列パズル）</b>： 衛星制御盤を操作する。各レバーは2つのダイヤルを同時に回す（逆向きに回る台もある）。3つのダイヤルを主錠 [0,0,0] にそろえるゲーム。副錠 [2,2,2] で小金庫も開く。';}
  $('ex-howto').innerHTML=HOWTO[S.room]+(S.escape&&S.room===2?(S.mis===2?' 脱出路は解錠済み。左端まで戻るだけだ。':S.mis===6?' 脱出には19手の制限がある。':' 脱出時は巡回の位相が往路と逆になる。'):'');
  $('ex-panel').innerHTML='';}
 function pushHist(){S.hist.push(JSON.stringify({px:S.px,gs:S.guardStep,steps:S.steps,alert:S.alert,gears:S.gears,eN:S.eNode,eF:S.eFlip,eK:S.eKey,dials:S.dials}));if(S.hist.length>60)S.hist.shift();}
@@ -630,14 +670,14 @@ function move(d){if(S.room===0)return;
  if(nx<0||nx>=w){S.hist.pop();return;}
  S.px=nx;S.steps++;S.pose=S.steps%2?'walk-a':'walk-b';advanceWorld();renderRoom(stepMsg());checkRoom();}
 function advanceWorld(){if(S.room===2&&PATROL[S.mis]&&!(E_MIS[S.mis]&&!S.escape)){S.guardStep=(S.guardStep+1)%P().seq.length;}}
-function stepMsg(){return S.room===2?(hidden()?(P().sense?'氷の陰に隠れている。':'柱の陰に隠れている。'):'通路を進んだ。'):'進んだ。';}
+function stepMsg(){return S.room===2?(hidden()?(P().sense?'氷の陰に隠れている。':P().beast?'茂みの陰に隠れている。':'柱の陰に隠れている。'):'通路を進んだ。'):'進んだ。';}
 function hidden(){return S.room===2&&!!PATROL[S.mis]&&P().pillars.includes(S.px);}
 function checkRoom(){
  if(S.room===2&&S.mis===2&&S.escape){if(S.px===0){missionClear();return;}}
  if(S.room===2&&PATROL[S.mis]){if(P().laser){laserCheck();return;}const vis=visCells();
   if(vis.includes(S.px)&&!hidden()){
    if((S.tools.disguise||S.tools.jammer)&&!S.freepassUsed){S.freepassUsed=true;S.alert+=1;$('ex-msg').innerHTML='<span class="red">'+MISSIONS[S.mis].fpMsg+'</span>';syncHud();if(S.alert>=6)fail();return;}
-   S.alert+=2;$('ex-msg').innerHTML='<span class="red">'+(P().sense?'⚠ センサーに探知された！ 警戒度+2。部屋の入口に戻された。':P().drone?'⚠ ドローンに探知された！ 警戒度+2。部屋の入口に戻された。':'⚠ 警備の視線に入った！ 警戒度+2。部屋の入口に戻された。')+'</span>';S.px=S.escape?P().w-1:0;S.guardStep=0;renderRoom();syncHud();if(S.alert>=6)fail();return;}
+   S.alert+=2;$('ex-msg').innerHTML='<span class="red">'+(P().sense?'⚠ センサーに探知された！ 警戒度+2。部屋の入口に戻された。':P().drone?'⚠ ドローンに探知された！ 警戒度+2。部屋の入口に戻された。':P().beast?'⚠ ジャガーに見つかった！ 警戒度+2。部屋の入口に戻された。':'⚠ 警備の視線に入った！ 警戒度+2。部屋の入口に戻された。')+'</span>';S.px=S.escape?P().w-1:0;S.guardStep=0;renderRoom();syncHud();if(S.alert>=6)fail();return;}
   if(!S.escape&&S.px===P().w-1){enterRoom(3,MISSIONS[S.mis].r3);return;}
   if(S.escape&&S.px===0){missionClear();return;}}
  if(S.room===1&&S.px===ROOM_W[1]-1&&S.doorOpen){enterRoom(2,MISSIONS[S.mis].r2);}
@@ -646,7 +686,7 @@ function checkRoom(){
 function syncHud(){$('hud-alert').textContent=S.alert;$('hud-steps').textContent=S.steps;}
 function fail(){S.alert=0;S.guardStep=0;S.px=S.escape?((PATROL[S.mis]?P().w:ROOM_W[2])-1):0;if(E_MIS[S.mis]&&S.room===2){S.eNode='W';S.eFlip=false;}renderRoom('<span class="red">警戒度が限界に達し、作戦は仕切り直しになった（この部屋から再開）。</span>');}
 function interact(){
- if(S.room===1){if(Math.abs(S.px-9)<=1){S.pose='operate';renderRoom();S.mis===2?openSwitchPuzzle():S.mis===3?openKey4Puzzle():S.mis===4?openReactorPuzzle():S.mis===5?openCodePuzzle():S.mis===6?openFacePuzzle():openKeyPuzzle();}else $('ex-msg').innerHTML='コンソールに近づいて操作しよう（右側の棚）。';}
+ if(S.room===1){if(Math.abs(S.px-9)<=1){S.pose='operate';renderRoom();S.mis===2?openSwitchPuzzle():S.mis===3?openKey4Puzzle():S.mis===4?openReactorPuzzle():(S.mis===5||S.mis===7)?openCodePuzzle():S.mis===6?openFacePuzzle():openKeyPuzzle();}else $('ex-msg').innerHTML='コンソールに近づいて操作しよう（右側の棚）。';}
  else if(S.room===2&&E_MIS[S.mis]&&!S.escape){pushHist();S.steps++;S.eFlip=!S.eFlip;S.pose='operate';renderRoom(S.mis===2?(S.eFlip?'展示室が反転した。通路の配置が鏡像に入れ替わった。':'展示室を通常の配置に戻した。'):(S.eFlip?'下層デッキへ移った。通路の接続が変わった。':'上層デッキへ戻った。通路の接続が変わった。'));syncHud();}
  else if(S.room===3){if(Math.abs(S.px-8)<=1||Math.abs(S.px-10)<=1){S.pose='operate';renderRoom();(S.mis===1||S.mis===4||S.mis===6)?openGearPuzzle():openDialPuzzle();}else $('ex-msg').innerHTML='コンソールに近づいて操作しよう。';}
  else{$('ex-msg').innerHTML='ここでは操作するものはない。';}}
@@ -769,23 +809,31 @@ function checkFace(){const cs=faceConds();
  else if(S.tools.smoke&&!S.smokeUsed){S.smokeUsed=true;$('ex-panel').innerHTML='';renderRoom('<span class="red">認証が合わない。</span> 煙幕弾の煙でカメラをごまかした（警戒度は上がらない）。');}
  else{S.alert++;syncHud();const bad=cs.findIndex(c=>!c[1])+1;$('ex-panel').innerHTML=`<div class="card"><span class="red">条件${bad}を満たしていない。警戒度+1。</span><br><button class="primary" onclick="renderFace()">顔データの作成に戻る</button></div>`;if(S.alert>=6)fail();}}
 // ---------- Room1 (M5): digit code (hacking CSP) ----------
-function codeConds(){const d=S.code;return[
+const CODECFG={5:{title:'暗号化キーの復号： 4桁のコード（各桁 0〜3）を特定せよ',ok:'✔ 暗号鍵が復号された。サーバーデッキへの扉が開いた。右端へ進め。',ng:'解読補助チップが警報をごまかした（警戒度は上がらない）。',conds:d=>[
  ['4桁の合計は 6',d[0]+d[1]+d[2]+d[3]===6],
  ['1桁目は 4桁目より大きい',d[0]>d[3]],
  ['偶数の桁はちょうど2つ',d.filter(x=>x%2===0).length===2],
  ['2桁目と3桁目は異なる',d[1]!==d[2]],
  ['0 の桁はない',!d.includes(0)],
- ['3桁目は 2桁目より小さい',d[2]<d[1]]];}
+ ['3桁目は 2桁目より小さい',d[2]<d[1]]]},
+7:{title:'周波数コードの照合： 4桁のコード（各桁 0〜3）を特定せよ',ok:'✔ 周波数が一致した。密林の通路への扉が開いた。右端へ進め。',ng:'煙幕弾の煙でセンサーをごまかした（警戒度は上がらない）。',conds:d=>[
+ ['4桁の合計は 5',d[0]+d[1]+d[2]+d[3]===5],
+ ['4桁目は 1桁目より大きい',d[3]>d[0]],
+ ['奇数の桁はちょうど3つ',d.filter(x=>x%2===1).length===3],
+ ['1桁目と3桁目は同じ',d[0]===d[2]],
+ ['3 を含む',d.includes(3)],
+ ['2桁目は 3桁目より小さい',d[1]<d[2]]]}};
+function codeConds(){return CODECFG[S.mis].conds(S.code);}
 function openCodePuzzle(){renderCode();}
 function renderCode(){const cs=codeConds();
- $('ex-panel').innerHTML=`<div class="card"><b>暗号化キーの復号： 4桁のコード（各桁 0〜3）を特定せよ</b>
+ $('ex-panel').innerHTML=`<div class="card"><b>${CODECFG[S.mis].title}</b>
  ${cs.map(c=>`<div class="cond ${c[1]?'ok':'ng'}">${c[1]?'✔':'✘'} ${c[0]}</div>`).join('')}
  <div style="text-align:center">${S.code.map((v,i)=>`<span style="display:inline-block;margin:0 4px"><button onclick="codeDigit(${i},1)">▲</button><div style="font-size:24px;font-weight:700">${v}</div><button onclick="codeDigit(${i},-1)">▼</button></span>`).join('')}</div>
  <button class="primary" onclick="checkCode()">確定する</button> <button onclick="$('ex-panel').innerHTML=''">閉じる</button></div>`;}
 function codeDigit(i,d){S.code[i]=(S.code[i]+d+4)%4;renderCode();}
 function checkCode(){const cs=codeConds();
- if(cs.every(c=>c[1])){S.doorOpen=true;$('ex-panel').innerHTML='';renderRoom('<b class="teal">✔ 暗号鍵が復号された。サーバーデッキへの扉が開いた。右端へ進め。</b>');}
- else if(S.tools.smoke&&!S.smokeUsed){S.smokeUsed=true;$('ex-panel').innerHTML='';renderRoom('<span class="red">コードが違う。</span> 解読補助チップが警報をごまかした（警戒度は上がらない）。');}
+ if(cs.every(c=>c[1])){S.doorOpen=true;$('ex-panel').innerHTML='';renderRoom('<b class="teal">'+CODECFG[S.mis].ok+'</b>');}
+ else if(S.tools.smoke&&!S.smokeUsed){S.smokeUsed=true;$('ex-panel').innerHTML='';renderRoom('<span class="red">コードが違う。</span> '+CODECFG[S.mis].ng);}
  else{S.alert++;syncHud();const bad=cs.findIndex(c=>!c[1])+1;$('ex-panel').innerHTML=`<div class="card"><span class="red">条件${bad}を満たしていない。警戒度+1。</span><br><button class="primary" onclick="renderCode()">コード入力に戻る</button></div>`;if(S.alert>=6)fail();}}
 // ---------- Room1 (M4): reactor switch SAT ----------
 function rcConds(){const s=S.sw;return[
@@ -835,7 +883,7 @@ function dialDist(g){const key=g.join(',');if(key==='0,0,0')return 0;
   for(const st of q)for(const L in DIAL_LV){const ns=st.map((v,i)=>(v+DIAL_LV[L][i]+4)%4);const k=ns.join(',');if(k==='0,0,0')return d;if(!seen.has(k)){seen.add(k);nq.push(ns);}}
   q=nq;}
  return -1;}
-const DIALCFG={2:{start:[2,3,1],sub:[2,2,2],subName:'暁のティアラ',mainShort:4,panel:'回転展示台コンソール',doc:'移送リスト'},3:{start:[2,0,0],sub:[2,2,2],subName:'王家の宝珠',mainShort:5,panel:'回転金庫コンソール',doc:'秘密外交記録'},5:{start:[0,0,2],sub:[2,2,2],subName:'予備の暗号鍵',mainShort:5,panel:'コア制御盤',doc:'金融データ'}};
+const DIALCFG={2:{start:[2,3,1],sub:[2,2,2],subName:'暁のティアラ',mainShort:4,panel:'回転展示台コンソール',doc:'移送リスト'},3:{start:[2,0,0],sub:[2,2,2],subName:'王家の宝珠',mainShort:5,panel:'回転金庫コンソール',doc:'秘密外交記録'},5:{start:[0,0,2],sub:[2,2,2],subName:'予備の暗号鍵',mainShort:5,panel:'コア制御盤',doc:'金融データ'},7:{start:[3,1,0],sub:[2,2,2],subName:'現金輸送ルート図',mainShort:4,panel:'衛星制御盤',doc:'衛星制御コード'}};
 function openDialPuzzle(){renderDials();}
 function renderDials(){
  $('ex-panel').innerHTML=`<div class="card"><b>${DIALCFG[S.mis].panel}</b> — 3つのダイヤルを主錠 [0, 0, 0] にそろえよ。現在： [${S.dials.join(', ')}]${S.vaultOpen?' ／ 副錠目標： ['+DIALCFG[S.mis].sub.join(', ')+']':''}${S.tools.battery&&!S.vaultOpen?` ／ <span class="teal">主錠まであと最低 ${dialDist(S.dials)} 手</span>`:''}
