@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>THE CAPER — prototype v0</title>
+<style>
+  :root{--navy:#0d1b2a;--navy2:#12283d;--brass:#d9a441;--brass2:#f2c96b;--teal:#7fd4c1;--red:#ff5147;--ink:#e8eef4;--mut:#93a7ba}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:#060b12;color:var(--ink);font-family:"Hiragino Kaku Gothic ProN",system-ui,sans-serif;display:flex;justify-content:center}
+  #app{width:min(96vw,760px);padding:10px 10px 28px}
+  h1,h2{font-family:ui-monospace,Menlo,monospace;letter-spacing:.04em}
+  .card{background:var(--navy2);border:2px solid #2b435c;border-radius:10px;padding:14px;margin:10px 0}
+  .gold{color:var(--brass2)} .mut{color:var(--mut)} .red{color:var(--red)} .teal{color:var(--teal)}
+  button{background:#1d3850;color:var(--ink);border:2px solid var(--brass);border-radius:8px;padding:10px 14px;font-size:16px;cursor:pointer;margin:4px}
+  button:disabled{opacity:.35;cursor:default}
+  button.primary{background:var(--brass);color:#23180a;font-weight:700}
+  .screen{display:none}.screen.on{display:block}
+  #logo{width:100%;border-radius:10px;border:2px solid #2b435c}
+  .hud{display:flex;gap:14px;flex-wrap:wrap;font-family:ui-monospace,monospace;font-size:14px;background:#0a141f;border:1px solid #2b435c;border-radius:8px;padding:8px 10px}
+  .track{position:relative;height:150px;background:linear-gradient(#10222f,#0b1826);border:2px solid #2b435c;border-radius:8px;overflow:hidden;margin:10px 0}
+  .floor{position:absolute;left:0;right:0;bottom:0;height:26px;background:repeating-linear-gradient(90deg,#33475c 0 34px,#2b3e50 34px 36px)}
+  .cellmark{position:absolute;bottom:26px;width:36px;text-align:center;font-size:11px;color:var(--mut)}
+  .actor{position:absolute;bottom:24px;height:86px;width:auto;image-rendering:pixelated;transition:left .18s}
+  .guardimg{width:36px;height:64px}
+  .guardvis{position:absolute;bottom:24px;height:64px;background:rgba(255,81,71,.16);border-right:2px dashed rgba(255,81,71,.5)}
+  .ghost{opacity:.35}
+  .pillar{position:absolute;bottom:26px;width:20px;height:96px;background:linear-gradient(90deg,#3a4f66,#26384c);border:1px solid #4b647f}
+  .door{position:absolute;bottom:26px;width:30px;height:104px;background:linear-gradient(90deg,#6b5320,#a37f2c,#6b5320);border:2px solid #d9a441;border-radius:6px 6px 0 0}
+  .obj{position:absolute;bottom:26px;font-size:26px}
+  .keys{display:flex;gap:10px;justify-content:center;margin:10px 0}
+  .keybtn{width:64px;height:64px;border-radius:50%;font-weight:700;font-size:15px;color:#0b0f14}
+  .gears{display:flex;gap:18px;justify-content:center;margin:12px 0}
+  .gear{width:86px;height:86px;border-radius:50%;background:radial-gradient(circle,#f2c96b 0 18%,#a37f2c 19% 58%,#6b5320 59%);display:flex;align-items:center;justify-content:center;position:relative;border:3px solid #57451c}
+  .gear .mark{position:absolute;top:4px;left:50%;width:8px;height:20px;margin-left:-4px;background:#ff5147;border-radius:3px}
+  .gear .num{font-family:ui-monospace,monospace;font-weight:700;color:#23180a;background:rgba(255,255,255,.75);border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center}
+  .cond{font-family:ui-monospace,monospace;font-size:14px;margin:4px 0}
+  .ok{color:var(--teal)} .ng{color:var(--red)}
+  .nodes{position:relative;height:230px;background:#0a141f;border:1px solid #2b435c;border-radius:8px}
+  .node{position:absolute;width:74px;padding:6px 2px;font-size:12px;text-align:center;background:#1d3850;border:2px solid #7f95ab;border-radius:8px;cursor:pointer}
+  .node.sel{border-color:var(--brass);background:#4a3a14}
+  svg.routes{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+  .big{font-size:19px;line-height:1.7}
+  .ver{text-align:right;color:var(--mut);font-size:12px}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- TITLE -->
+  <section id="scr-title" class="screen on">
+    <img id="logo" src="assets/logo.jpg" alt="THE CAPER">
+    <div class="card" style="text-align:center">
+      <div class="big">スパイ <b class="gold">SECOND</b> は、世界が壊れる前に盗む。</div>
+      <button class="primary" onclick="go('scr-brief')">ミッション開始</button>
+      <div class="ver">prototype v0.1 / M1「中央銀行の夜」／ SECOND 本番絵（シートA）組み込み済み</div>
+    </div>
+  </section>
+
+  <!-- BRIEFING -->
+  <section id="scr-brief" class="screen">
+    <h2>📋 ブリーフィング — WATCH 本部</h2>
+    <div class="card big">
+      SECOND へ。中央銀行、地下金庫。狙いは<b class="gold">介入計画書</b>ひとつ。<br>
+      明朝6時、その計画が発動すれば通貨危機は隣国へ飛び火し、紛争の火種になる。<br>
+      計画書を盗み出せ。WATCH が事前に公表させれば、危機は回避できる。<br>
+      <span class="mut">――世界はまだ、何も知らない。</span>
+    </div>
+    <button class="primary" onclick="go('scr-recon')">下見フェーズへ</button>
+  </section>
+
+  <!-- RECON HUB -->
+  <section id="scr-recon" class="screen">
+    <h2>🔎 下見フェーズ</h2>
+    <div class="hud"><span>調査コスト（開始警戒度）: <b class="red" id="recon-cost">0</b></span><span>A: <b id="recon-a-state">未クリア</b></span><span>B: <b id="recon-b-state">未クリア</b></span></div>
+    <div class="card"><b>A. 情報収集パズル</b>（情報理論）— 質問3回で夜の体制8候補を1つに特定する。<br>
+      <button onclick="startA()">A に挑む</button></div>
+    <div class="card"><b>B. ネットワーク構築ゲーム</b>（グラフ理論）— 侵入路と脱出路を設計する。<br>
+      <button onclick="startB()">B に挑む</button></div>
+    <div class="card mut">ルール： 下見は <b>最低1つクリア</b> しないと実行に入れない。両方やると実行が楽になるが、調査コストが開始警戒度に乗る。</div>
+    <button class="primary" id="btn-exec" disabled onclick="startExec()">実行フェーズ開始</button>
+  </section>
+
+  <!-- RECON A -->
+  <section id="scr-a" class="screen">
+    <h2>A. 情報収集 — 候補 <span class="gold" id="a-cand">8</span> 件 / 残り質問 <span class="gold" id="a-left">3</span> 回</h2>
+    <div class="card" id="a-log">情報屋「聞きたいことは3つまでだ。よく選べ。」</div>
+    <div id="a-qs"></div>
+    <button onclick="go('scr-recon')">下見ハブへ戻る</button>
+  </section>
+
+  <!-- RECON B -->
+  <section id="scr-b" class="screen">
+    <h2>B. 経路設計 — <span id="b-phase">侵入路： P（駐車場）から V（金庫前）へ</span></h2>
+    <div class="nodes" id="b-nodes"><svg class="routes" id="b-svg"></svg></div>
+    <div class="card" id="b-info">ノードを順にタップして道をつなぐ。辺のコスト合計がそのまま実行の所要手数になる。</div>
+    <button onclick="bUndo()">1つ戻す</button>
+    <button onclick="startB()">やり直し</button>
+    <button onclick="go('scr-recon')">下見ハブへ戻る</button>
+  </section>
+
+  <!-- EXECUTION -->
+  <section id="scr-exec" class="screen">
+    <h2 id="ex-title">実行フェーズ</h2>
+    <div class="hud">
+      <span>警戒度: <b class="red" id="hud-alert">0</b>/6</span>
+      <span>手数: <b id="hud-steps">0</b></span>
+      <span>部屋: <b id="hud-room">1</b></span>
+      <span id="hud-info" class="teal"></span>
+    </div>
+    <div class="track" id="track"></div>
+    <div class="card" id="ex-msg"></div>
+    <div id="ex-panel"></div>
+    <div style="text-align:center">
+      <button onclick="move(-1)">◀ 進む</button>
+      <button onclick="interact()" class="primary">調べる／操作</button>
+      <button onclick="move(1)">進む ▶</button>
+      <button onclick="undo()">↩ アンドゥ</button>
+    </div>
+    <div class="mut" style="text-align:center">キーボード： ← → で移動、E で操作、U でアンドゥ。1手ごとに警備と仕掛けも1ステップ進む。</div>
+  </section>
+
+  <!-- DEBRIEF -->
+  <section id="scr-debrief" class="screen">
+    <h2>📨 デブリーフィング — WATCH 本部</h2>
+    <div class="card big">計画書は WATCH の手に渡った。明朝、介入計画は“リーク”として公表され、為替市場は織り込み済みで静かに開いた。<br><b class="gold">紛争の火種は、火がつく前に消えた。</b></div>
+    <div class="card" id="score"></div>
+    <button class="primary" onclick="location.reload()">もう一度遊ぶ</button>
+  </section>
+
+</div>
+<script>
+"use strict";
+// ---------- state ----------
+const S = {
+  alert:0, reconCost:0, steps:0,
+  aClear:false, bClear:false,
+  facts:{wing:false,guards:false,patrol:false},
+  routeIn:null, routeOut:null,
+  room:1, px:0, hist:[],
+  gears:[1,2,3], gearSteps:0, vaultOpen:false, loot:false, hasDoc:false,
+  guardStep:0, escape:false, keyOrder:[]
+};
+const $=id=>document.getElementById(id);
+const POSE={idle:'assets/second-idle.png','walk-a':'assets/second-walk-a.png','walk-b':'assets/second-walk-b.png',sneak:'assets/second-sneak.png',crouch:'assets/second-crouch.png',operate:'assets/second-operate.png',reach:'assets/second-reach.png',carry:'assets/second-carry.png'};
+function go(id){document.querySelectorAll('.screen').forEach(e=>e.classList.remove('on'));$(id).classList.add('on');}
+// ---------- sprites (placeholder pixel art: nono-based SECOND, MI-style short layered hair, black suit) ----------
+function sprite(rows,pal){const c=document.createElement('canvas');c.width=rows[0].length;c.height=rows.length;const x=c.getContext('2d');rows.forEach((r,j)=>{[...r].forEach((ch,i)=>{if(pal[ch]){x.fillStyle=pal[ch];x.fillRect(i,j,1,1);}});});return c.toDataURL();}
+const SECOND_IMG=sprite([
+"................",
+"....hhhhhh......",
+"...hhhhhhhh.....",
+"..hhssssssh.....",
+"..hssssssse.....",
+"..ssssssss......",
+"...ssssss.......",
+"..tttttttt......",
+".tttttttttt.....",
+".tttttttttt.....",
+"..tttttttt......",
+"...bb..bb.......",
+"...bb..bb.......",
+"...bb..bb.......",
+"..bbb..bbb......",
+"................"],{h:"#8a5a33",s:"#f2c9a0",e:"#1d7a4f",t:"#15181d",b:"#101216"});
+const GUARD_IMG=sprite([
+"................",
+"....cccccc......",
+"...cccccccc.....",
+"..ssssssss......",
+"..ssssssss......",
+"...ssssss.......",
+"..uuuuuuuu......",
+".uuuuuuuuuu.....",
+".uuuuuuuuuu.....",
+"..uuuuuuuu......",
+"...bb..bb.......",
+"...bb..bb.......",
+"...bb..bb.......",
+"..bbb..bbb......",
+"................",
+"................"],{c:"#3c5a78",s:"#e8b98d",u:"#2c435c",b:"#141a21"});
+
+// ---------- Recon A ----------
+const A_QS=[
+ {id:'wing', q:'「今夜の金庫は東棟か」', a:'情報屋「ああ、東棟だ」', fact:'wing', label:'金庫は東棟'},
+ {id:'guards', q:'「警備は2名か」', a:'情報屋「そうだ、2名体制だ」', fact:'guards', label:'警備は2名'},
+ {id:'patrol', q:'「巡回は反時計回りか」', a:'情報屋「その通り、反時計回りだ」', fact:'patrol', label:'巡回は反時計回り'},
+ {id:'trap', q:'「金庫の暗証番号は」', a:'情報屋「…そんなもの、知るわけがない」', fact:null, label:null}
+];
+let aLeft=3,aCand=8,aUsed=[];
+function startA(){aLeft=3;aCand=8;aUsed=[];if(!S.aClear)S.facts={wing:false,guards:false,patrol:false};
+ $('a-log').textContent='情報屋「聞きたいことは3つまでだ。よく選べ。」';renderA();go('scr-a');}
+function renderA(){$('a-cand').textContent=aCand;$('a-left').textContent=aLeft;
+ $('a-qs').innerHTML=A_QS.filter(q=>!aUsed.includes(q.id)).map(q=>`<button onclick="askA('${q.id}')">${q.q}</button>`).join('');}
+function askA(id){const q=A_QS.find(x=>x.id===id);aUsed.push(id);aLeft--;
+ if(q.fact){S.facts[q.fact]=true;aCand=Math.max(1,aCand/2);$('a-log').innerHTML=q.a+`<br>候補が <b class="gold">${aCand}件</b> に絞れた。`;}
+ else{$('a-log').innerHTML=q.a+`<br><span class="red">情報量ゼロ。質問回数だけ減った。</span>`;}
+ if(aCand===1){S.aClear=true;S.reconCost+=0;$('a-log').innerHTML+='<br><b class="teal">✔ 体制を完全特定した（A クリア）</b>';syncRecon();setTimeout(()=>go('scr-recon'),900);return;}
+ if(aLeft<=0){S.reconCost+=1;$('a-log').innerHTML+='<br><span class="red">特定できなかった。調査コスト+1（開始警戒度に加算）。もう一度挑める。</span>';syncRecon();return;}
+ renderA();}
+// ---------- Recon B ----------
+const B_NODES={P:[4,150],H:[26,150],U:[26,40],L:[52,150],V:[74,40],X:[90,150]};
+const B_EDGES={'P-H':[2,'低'],'H-U':[2,'低'],'H-L':[3,'高'],'U-V':[3,'低'],'L-V':[2,'高'],'V-X':[3,'中'],'H-X':[4,'中']};
+let bPath=['P'],bPhase=1,bIn=null;
+function edgeKey(a,b){return B_EDGES[a+'-'+b]?a+'-'+b:(B_EDGES[b+'-'+a]?b+'-'+a:null);}
+function startB(){bPath=['P'];bPhase=1;bIn=null;renderB();go('scr-b');}
+function renderB(){const wrap=$('b-nodes');wrap.querySelectorAll('.node').forEach(n=>n.remove());
+ for(const k in B_NODES){const d=document.createElement('div');d.className='node'+(bPath.includes(k)?' sel':'');d.style.left=B_NODES[k][0]+'%';d.style.top=B_NODES[k][1]+'px';d.textContent=k;d.onclick=()=>tapNode(k);wrap.appendChild(d);}
+ const svg=$('b-svg');let lines='';
+ const draw=(path,col)=>{for(let i=0;i<path.length-1;i++){const a=B_NODES[path[i]],b=B_NODES[path[i+1]];lines+=`<line x1="${a[0]+5}%" y1="${a[1]+16}" x2="${b[0]+5}%" y2="${b[1]+16}" stroke="${col}" stroke-width="3"/>`;}};
+ if(bIn)draw(bIn,'#7fd4c1');draw(bPath,'#d9a441');svg.innerHTML=lines;
+ $('b-phase').textContent=bPhase===1?'侵入路： P（駐車場）から V（金庫前）へ':'脱出路： V（金庫前）から X（非常口）へ';
+ let cost=0;for(let i=0;i<bPath.length-1;i++){const e=edgeKey(bPath[i],bPath[i+1]);if(e)cost+=B_EDGES[e][0];}
+ $('b-info').textContent='現在の道： '+bPath.join(' → ')+'（コスト '+cost+'）';}
+function tapNode(k){const last=bPath[bPath.length-1];if(k===last)return;
+ if(!edgeKey(last,k)){$('b-info').innerHTML=`<span class="red">${last} と ${k} はつながっていない。</span>`;return;}
+ bPath.push(k);
+ const target=bPhase===1?'V':'X';
+ if(k===target){let cost=0;for(let i=0;i<bPath.length-1;i++)cost+=B_EDGES[edgeKey(bPath[i],bPath[i+1])][0];
+  if(bPhase===1){bIn=bPath.slice();S.routeIn=bPath.slice();bPhase=2;bPath=['V'];renderB();$('b-info').innerHTML=`侵入路が確定した： コスト ${cost}。次は脱出路（V→X）。`;}
+  else{S.routeOut=bPath.slice();S.bClear=true;S.routeInCost=bIn?routeCost(S.routeIn):0;
+   $('b-info').innerHTML=`<b class="teal">✔ 経路設計完了（B クリア）</b> 侵入 ${S.routeIn.join('→')} ／ 脱出 ${S.routeOut.join('→')}`;syncRecon();setTimeout(()=>go('scr-recon'),1000);return;}}
+ renderB();}
+function routeCost(p){let c=0;for(let i=0;i<p.length-1;i++)c+=B_EDGES[edgeKey(p[i],p[i+1])][0];return c;}
+function bUndo(){if(bPath.length>1){bPath.pop();renderB();}}
+function syncRecon(){$('recon-cost').textContent=S.reconCost;
+ $('recon-a-state').textContent=S.aClear?'クリア ✔':'未クリア';
+ $('recon-b-state').textContent=S.bClear?'クリア ✔':'未クリア';
+ $('btn-exec').disabled=!(S.aClear||S.bClear);}
+// ---------- Execution ----------
+const ROOM_W={1:12,2:14,3:12};
+let guardSeq=[8,9,10,9,8,7],guardFace=[1,1,1,-1,-1,-1];
+function startExec(){S.alert=S.reconCost;S.steps=0;S.room=1;S.px=0;S.hist=[];S.gears=[1,2,3];S.gearSteps=0;S.vaultOpen=false;S.loot=false;S.hasDoc=false;S.escape=false;S.guardStep=0;
+ $('hud-info').textContent=(S.facts.patrol?'巡回：反時計回り（未来位置表示）':'')+(S.facts.wing?' 金庫：東棟':'');
+ go('scr-exec');enterRoom(1,'配電室の扉の前に立った。コンソールには3色の鍵スロットがある。');}
+function enterRoom(n,msg){S.room=n;S.px=0;S.pose='idle';S.hist=[];if(n===2&&S.escape){S.px=ROOM_W[2]-1;}
+ $('hud-room').textContent=S.escape?'3（脱出）':n;renderRoom(msg);}
+function cellX(i,w){return `calc(${i*(100/w)}% + 4px)`;}
+function renderRoom(msg){const t=$('track');const w=ROOM_W[S.room];let h='<div class="floor"></div>';
+ if(S.room===1){h+=`<div class="obj" style="left:${cellX(9,w)}">🗄️</div><div class="cellmark" style="left:${cellX(9,w)}">コンソール</div><div class="door" style="right:6px"></div>`;}
+ if(S.room===2){[4,11].forEach(p=>{h+=`<div class="pillar" style="left:calc(${p*(100/w)}% + 12px)"></div>`;});
+   const gi=guardSeq[S.guardStep%6];const gf=guardFace[S.guardStep%6];
+   if(S.facts.patrol){for(let k=1;k<=3;k++){const gp=guardSeq[(S.guardStep+k)%6];h+=`<img class="actor guardimg ghost" src="${GUARD_IMG}" style="left:${cellX(gp,w)}">`;}}
+   h+=`<div class="guardvis" style="left:${cellX(gf===1?gi+1:gi-2,w)};width:${(200/w)}%"></div>`;
+   h+=`<img class="actor guardimg" src="${GUARD_IMG}" style="left:${cellX(gi,w)}">`;
+   h+=`<div class="door" style="${S.escape?'left:6px':'right:6px'}"></div>`;}
+ if(S.room===3){h+=`<div class="obj" style="left:${cellX(8,w)}">🧰</div><div class="cellmark" style="left:${cellX(8,w)}">歯車盤</div><div class="obj" style="left:${cellX(10,w)}">🏦</div><div class="cellmark" style="left:${cellX(10,w)}">金庫</div>`;}
+ const disp=S.hasDoc?'carry':(hidden()?'crouch':(S.pose||'idle'));
+ h+=`<img class="actor" id="pl" src="${POSE[disp]}" style="left:${cellX(S.px,w)}">`;
+ t.innerHTML=h;
+ $('hud-alert').textContent=S.alert;$('hud-steps').textContent=S.steps;
+ if(msg)$('ex-msg').innerHTML=msg;
+ $('ex-title').textContent='実行フェーズ — '+(S.room===1?'部屋1：配電室':S.room===2?'部屋2：金庫前通路':'部屋3：金庫')+(S.escape?'（脱出）':'');
+ $('ex-panel').innerHTML='';}
+function pushHist(){S.hist.push(JSON.stringify({px:S.px,gs:S.guardStep,steps:S.steps,alert:S.alert,gears:S.gears}));if(S.hist.length>60)S.hist.shift();}
+function undo(){const s=S.hist.pop();if(!s){$('ex-msg').innerHTML='これ以上戻れない。';return;}
+ const o=JSON.parse(s);S.px=o.px;S.guardStep=o.gs;S.steps=o.steps;S.alert=o.alert;S.gears=o.gears;renderRoom('1手戻した。（警戒度は巻き戻らない仕様の試作版：今回は警戒度も戻している）');}
+function move(d){if(S.room===0)return;pushHist();const w=ROOM_W[S.room];const nx=S.px+d;
+ if(nx<0||nx>=w){S.hist.pop();return;}
+ S.px=nx;S.steps++;S.pose=S.steps%2?'walk-a':'walk-b';advanceWorld();renderRoom(stepMsg());checkRoom();}
+function advanceWorld(){if(S.room===2){S.guardStep=(S.guardStep+1)%6;}}
+function stepMsg(){return S.room===2?(hidden()?'柱の陰に隠れている。':'通路を進んだ。'):'進んだ。';}
+function hidden(){return S.room===2&&(S.px===4||S.px===11);}
+function checkRoom(){
+ if(S.room===2){const gi=guardSeq[S.guardStep%6];const gf=guardFace[S.guardStep%6];
+  const vis=gf===1?[gi+1,gi+2]:[gi-1,gi-2];
+  if(vis.includes(S.px)&&!hidden()){S.alert+=2;$('ex-msg').innerHTML='<span class="red">⚠ 警備の視線に入った！ 警戒度+2。部屋の入口に戻された。</span>';S.px=S.escape?ROOM_W[2]-1:0;S.guardStep=0;renderRoom();syncHud();if(S.alert>=6)fail();return;}
+  if(!S.escape&&S.px===ROOM_W[2]-1){enterRoom(3,'金庫室。歯車盤が金庫を守っている。コンソール（歯車盤）を操作しよう。');return;}
+  if(S.escape&&S.px===0){missionClear();return;}}
+ if(S.room===1&&S.px===ROOM_W[1]-1&&S.doorOpen){enterRoom(2,'金庫前通路。警備が巡回している。柱の陰は視線を切る。右端の扉へ。');}
+ if(S.room===3&&S.px===ROOM_W[3]-1&&S.hasDoc&&!S.escape){S.escape=true;enterRoom(2,'脱出。巡回は往路と逆位相だ。左端の非常口へ戻れ。');S.guardStep=3;renderRoom('脱出。巡回は往路と逆位相だ。左端の非常口へ戻れ。');}
+ syncHud();}
+function syncHud(){$('hud-alert').textContent=S.alert;$('hud-steps').textContent=S.steps;}
+function fail(){S.alert=0;S.guardStep=0;S.px=S.escape?ROOM_W[2]-1:0;renderRoom('<span class="red">警戒度が限界に達し、作戦は仕切り直しになった（この部屋から再開）。</span>');}
+function interact(){
+ if(S.room===1){if(Math.abs(S.px-9)<=1){S.pose='operate';renderRoom();openKeyPuzzle();}else $('ex-msg').innerHTML='コンソールに近づいて操作しよう（右側の棚）。';}
+ else if(S.room===3){if(Math.abs(S.px-8)<=1||Math.abs(S.px-10)<=1){S.pose='operate';renderRoom();openGearPuzzle();}else $('ex-msg').innerHTML='歯車盤に近づいて操作しよう。';}
+ else{$('ex-msg').innerHTML='ここでは操作するものはない。';}}
+// ---------- Room1: key order (SAT) ----------
+function openKeyPuzzle(){S.keyOrder=[];
+ $('ex-panel').innerHTML=`<div class="card"><b>コンソール： 3色の鍵を差す順序を決めよ</b>
+ <div class="cond">条件1： 青の鍵は、赤の鍵より先に差す</div>
+ <div class="cond">条件2： 赤の鍵と緑の鍵は、続けて差す</div>
+ <div class="cond">条件3： 緑の鍵は、最後には差さない</div>
+ <div class="keys">
+  <button class="keybtn" style="background:#4aa3ff" onclick="pushKey('B')">青</button>
+  <button class="keybtn" style="background:#57d977" onclick="pushKey('G')">緑</button>
+  <button class="keybtn" style="background:#ff6b5e" onclick="pushKey('R')">赤</button>
+ </div>
+ <div id="key-seq" class="cond">選択： なし</div>
+ <button class="primary" onclick="checkKeys()">確定する</button> <button onclick="$('ex-panel').innerHTML=''">閉じる</button></div>`;}
+function pushKey(k){if(S.keyOrder.includes(k)||S.keyOrder.length>=3)return;S.keyOrder.push(k);
+ $('key-seq').textContent='選択： '+S.keyOrder.map(x=>({B:'青',G:'緑',R:'赤'})[x]).join(' → ');}
+function checkKeys(){if(S.keyOrder.length<3){$('key-seq').innerHTML='<span class="red">3本すべて選んでください。</span>';return;}
+ const p={};S.keyOrder.forEach((k,i)=>p[k]=i);
+ const c1=p.B<p.R,c2=Math.abs(p.R-p.G)===1,c3=p.G!==2;
+ if(c1&&c2&&c3){S.doorOpen=true;$('ex-panel').innerHTML='';renderRoom('<b class="teal">✔ 全条件を満たした。扉が開いた。右端へ進め。</b>');}
+ else{S.alert++;syncHud();$('key-seq').innerHTML=`<span class="red">条件${!c1?'1':!c2?'2':'3'}を満たしていない。警戒度+1。</span>`;
+  if(S.alert>=6)fail();}}
+// ---------- Room3: linked gears (group theory) ----------
+function openGearPuzzle(){renderGears();}
+function renderGears(){const names=['歯車1','歯車2','歯車3'];
+ $('ex-panel').innerHTML=`<div class="card"><b>連動歯車盤</b> — 全ての歯車の刻印（赤）を上（0）に揃えよ。現在： [${S.gears.join(', ')}]${S.vaultOpen?' ／ 副錠目標： [2, 2, 2]':''}
+ <div class="gears">${S.gears.map((g,i)=>`<div class="gear" style="transform:rotate(${g*90}deg)"><div class="mark"></div><div class="num" style="transform:rotate(${-g*90}deg)">${g}</div></div>`).join('')}</div>
+ <div style="text-align:center">
+  <button onclick="lever('A')">レバーA（歯車1・2）</button>
+  <button onclick="lever('B')">レバーB（歯車2・3）</button>
+  <button onclick="lever('C')">レバーC（歯車1・3）</button>
+ </div>
+ <div class="cond" id="gear-msg">操作回数： ${S.gearSteps}（最短は3手）</div>
+ <button onclick="$('ex-panel').innerHTML=''">閉じる</button></div>`;}
+function lever(L){pushHist();S.gearSteps++;S.steps++;
+ if(L==='A'){S.gears[0]=(S.gears[0]+1)%4;S.gears[1]=(S.gears[1]+1)%4;}
+ if(L==='B'){S.gears[1]=(S.gears[1]+1)%4;S.gears[2]=(S.gears[2]+1)%4;}
+ if(L==='C'){S.gears[0]=(S.gears[0]+1)%4;S.gears[2]=(S.gears[2]+1)%4;}
+ renderGears();syncHud();
+ if(!S.vaultOpen&&S.gears.every(g=>g===0)){S.vaultOpen=true;S.hasDoc=true;
+  $('gear-msg').innerHTML='<b class="teal">✔ 金庫が開いた！ 介入計画書を入手。あとは脱出だけだ（右端へ進むと通路に戻る）。小金庫の副錠 [2,2,2] に挑むこともできる。</b>';}
+ else if(S.vaultOpen&&!S.loot&&S.gears.every(g=>g===2)){S.loot=true;
+  $('gear-msg').innerHTML='<b class="gold">💰 小金庫が開いた。金塊を入手（収穫評価アップ）。</b>';}}
+// ---------- clear ----------
+function missionClear(){const par=21;
+ const stealth=S.alert<=1?'★★★':S.alert<=3?'★★☆':'★☆☆';
+ const craft=S.steps<=par?'★★★':S.steps<=par+10?'★★☆':'★☆☆';
+ $('score').innerHTML=`<div class="cond">完遂： ★★★（計画書を持ち帰った）</div>
+ <div class="cond">隠密： ${stealth}（警戒度 ${S.alert}）</div>
+ <div class="cond">名工： ${craft}（総手数 ${S.steps} ／ パー ${par}）</div>
+ <div class="cond">収穫： ${S.loot?'★★★（金塊を入手）':'☆☆☆（小金庫は開けていない）'}</div>
+ <div class="cond mut">下見： A ${S.aClear?'クリア':'未クリア'} ／ B ${S.bClear?'クリア':'未クリア'}</div>`;
+ go('scr-debrief');}
+document.addEventListener('keydown',e=>{
+ if(!$('scr-exec').classList.contains('on'))return;
+ if(e.key==='ArrowLeft')move(-1);else if(e.key==='ArrowRight')move(1);
+ else if(e.key==='e'||e.key==='E')interact();else if(e.key==='u'||e.key==='U')undo();});
+syncRecon();
+</script>
+</body>
+</html>
