@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-<title>THE CAPER — prototype v0.32</title>
+<title>THE CAPER — prototype v0.33</title>
 <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
 <link rel="apple-touch-icon" sizes="180x180" href="assets/icon-180.png">
 <link rel="manifest" href="manifest.webmanifest">
@@ -82,8 +82,8 @@
     <img id="logo" src="assets/logo.jpg" alt="THE CAPER">
     <div class="card" style="text-align:center">
       <div class="big">世界が壊れる前に盗め！</div>
-      <button class="primary" onclick="go('scr-select')">▶ 作戦を選ぶ</button>
-      <div class="ver">prototype v0.32 / 経路設計で次に進める地点が光るように（脱出路への移行を分かりやすく）</div>
+      <button class="primary" onclick="renderSelect();go('scr-select')">▶ 作戦を選ぶ</button>
+      <div class="ver">prototype v0.33 / 本番仕様： Bは作戦専用マップのみ・作戦はクリアで順次解放</div>
     </div>
   </section>
 
@@ -103,6 +103,8 @@
       <button class="primary" onclick="setMis(10)">M10「宇宙エレベーター建設区」</button>
       <button class="primary" onclick="setMis(11)">M11「終末時計塔」</button>
     </div>
+    <div class="card mut">作戦はクリアすると、次の作戦が解放されます。進行度はこの端末に保存されます（✔＝クリア済み）。</div>
+    <button onclick="resetProgress()">進行度をリセット</button>
     <button onclick="go('scr-title')">← タイトルへ戻る</button>
   </section>
 
@@ -126,7 +128,7 @@
     <div class="card"><b>A. 情報収集パズル</b>（情報理論）— 質問3回で夜の体制8候補を1つに特定する。<br>
       <button onclick="startA()">A に挑む</button></div>
     <div class="card"><b>B. ネットワーク構築ゲーム</b>（グラフ理論）— 侵入路と脱出路を設計する。<br>
-      <button onclick="startB(0)">M1 中央銀行</button> <button onclick="startB(1)">M2 美術館</button> <button onclick="startB(2)">M3 港の倉庫</button> <button onclick="startB(3)">S3 王宮</button> <button onclick="startB(4)">S4 氷下基地</button> <button onclick="startB(5)">S5 海上要塞</button> <button onclick="startB(6)">S6 欧州中銀</button> <button onclick="startB(7)">S7 密林施設</button> <button onclick="startB(8)">S8 港（不完全）</button> <button onclick="startB(9)">S9 ヴァイスベルク</button> <button onclick="startB(10)">S10 宇宙エレベーター</button> <button onclick="startB(11)">S11 終末時計塔</button></div>
+      <button onclick="startB(MIS2MAP[S.mis])">B に挑む</button></div>
     <div class="card" id="d-card" style="display:none"><b>D. 道具の詰め込み</b>（NP困難：ナップサック）— 容量10に収まるよう道具と金品を選ぶ。最適でなくても確定できるが、価値が収穫評価になる。<br>
       <button onclick="startD()">D に挑む</button></div>
     <div class="card mut">ルール： 下見は <b>最低1つクリア</b> しないと実行に入れない。全部やると実行が楽になるが、調査コストが開始警戒度に乗る。</div>
@@ -1150,7 +1152,7 @@ function laserCheck(){const p=P();
  if((p.gates[S.px]||[]).includes(S.guardStep%p.cycle)){
   if((S.tools.disguise||S.tools.jammer)&&!S.freepassUsed){S.freepassUsed=true;S.alert+=1;$('ex-msg').innerHTML='<span class="red">'+MISSIONS[S.mis].fpMsg+'</span>';syncHud();if(S.alert>=6)fail();return;}
   S.alert+=2;$('ex-msg').innerHTML='<span class="red">⚠ レーザーに触れた！ 警戒度+2。部屋の入口に戻された。</span>';S.px=S.escape?p.w-1:0;if(S.escape){S.guardStep=p.escGs;S.escSteps=0;}else S.guardStep=0;renderRoom();syncHud();if(S.alert>=6)fail();return;}}
-function missionClear(){const par=MISSIONS[S.mis].par;
+function missionClear(){const newlyCleared=!cleared.has(S.mis);cleared.add(S.mis);saveProgress();const par=MISSIONS[S.mis].par;
  const stealth=S.alert<=1?'★★★':S.alert<=3?'★★☆':'★☆☆';
  const craft=S.steps<=par?'★★★':S.steps<=par+10?'★★☆':'★☆☆';
  const lootLine=S.mis===1?(S.loot?'★★★（'+GEARCFG[1].subName+'を入手）':'☆☆☆（小金庫は開けていない）'):(typeof GEARCFG!=='undefined'&&GEARCFG[S.mis])?`価値 ${S.dValue} ／ 20${S.loot?' ＋ '+GEARCFG[S.mis].subName:''}（${S.dValue>=20&&S.loot?'★★★':(S.dValue>=12||S.loot)?'★★☆':'★☆☆'}）`:`価値 ${S.dValue} ／ 20${S.tiara?' ＋ '+DIALCFG[S.mis].subName:''}（${S.dValue>=20&&S.tiara?'★★★':(S.dValue>=12||S.tiara)?'★★☆':'★☆☆'}）`;
@@ -1161,6 +1163,7 @@ function missionClear(){const par=MISSIONS[S.mis].par;
  <div class="cond mut">下見： A ${S.aClear?'クリア':'未クリア'} ／ B ${S.bClear?'クリア':'未クリア'}${S.mis!==1?' ／ D '+(S.dClear?'クリア':'未クリア'):''}</div>`;
  $('deb-body').innerHTML=MISSIONS[S.mis].deb;
  $('ending').innerHTML=S.mis===11?`<div class="card"><b>―― 選択 ――</b><div class="cond">機密データは、WATCH そのものが世界を操作してきた証拠だった。SECOND よ、どうする。</div>${MISSIONS[11].endings.map((e,i)=>`<button class="primary" onclick="chooseEnding(${i})">${e.label}</button>`).join(' ')}</div>`:'';
+ if(newlyCleared&&S.mis<11){$('ending').innerHTML='<div class="card"><b class="teal">▶ 次の作戦 M'+(S.mis+1)+' が解放された</b><div class="cond">作戦選択に戻ると、選べるようになっている。</div></div>';}
  go('scr-debrief');}
 function chooseEnding(i){const e=MISSIONS[11].endings[i];$('ending').innerHTML=`<div class="card"><b>${e.label}</b><div class="cond">${e.text}</div><div class="cond mut">THE CAPER ― 全11作戦、完遂。遊んでくれてありがとう。</div></div>`;}
 document.addEventListener('dblclick',e=>{e.preventDefault();},{passive:false});
@@ -1169,7 +1172,14 @@ document.addEventListener('keydown',e=>{
  if(!$('scr-exec').classList.contains('on'))return;
  if(e.key==='ArrowLeft')move(-1);else if(e.key==='ArrowRight')move(1);
  else if(e.key==='e'||e.key==='E')interact();else if(e.key==='u'||e.key==='U')undo();});
-syncRecon();
+// ---------- production spec: progress save + sequential unlock ----------
+const MIS2MAP={1:0,2:1,3:3,4:4,5:5,6:6,7:7,8:8,9:9,10:10,11:11};
+let cleared=new Set();try{cleared=new Set(JSON.parse(localStorage.getItem('caper_cleared')||'[]'));}catch(e){}
+function saveProgress(){try{localStorage.setItem('caper_cleared',JSON.stringify([...cleared]));}catch(e){}}
+function isUnlocked(n){return n===1||cleared.has(n-1);}
+function renderSelect(){document.querySelectorAll('#scr-select .card button').forEach((b,i)=>{const n=i+1;if(!b.dataset.label)b.dataset.label=b.textContent;const un=isUnlocked(n);b.disabled=!un;b.style.opacity=un?'':'0.45';b.textContent=(un?'':'🔒 ')+b.dataset.label+(cleared.has(n)?' ✔':'');});}
+function resetProgress(){cleared=new Set();saveProgress();renderSelect();}
+syncRecon();renderSelect();
 </script>
 </body>
 </html>
