@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-<title>THE CAPER — prototype v0.31</title>
+<title>THE CAPER — prototype v0.32</title>
 <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
 <link rel="apple-touch-icon" sizes="180x180" href="assets/icon-180.png">
 <link rel="manifest" href="manifest.webmanifest">
@@ -68,6 +68,8 @@
   .node.off{opacity:.35;filter:saturate(.35);cursor:not-allowed}
   .planlabel{position:absolute;z-index:0;pointer-events:none;font-weight:700;letter-spacing:.06em}
   .node.done{border-color:#7fd4c1;background:#17384a}
+  .node.next{animation:nextpulse 1.1s ease-in-out infinite;border-color:var(--brass2)}
+  @keyframes nextpulse{0%,100%{box-shadow:0 0 0 0 rgba(217,164,65,0)}50%{box-shadow:0 0 0 6px rgba(217,164,65,.5)}}
   .big{font-size:19px;line-height:1.7}
   .ver{text-align:right;color:var(--mut);font-size:12px}
 </style>
@@ -81,7 +83,7 @@
     <div class="card" style="text-align:center">
       <div class="big">世界が壊れる前に盗め！</div>
       <button class="primary" onclick="go('scr-select')">▶ 作戦を選ぶ</button>
-      <div class="ver">prototype v0.31 / 横向きでは作戦選択を2列構成に</div>
+      <div class="ver">prototype v0.32 / 経路設計で次に進める地点が光るように（脱出路への移行を分かりやすく）</div>
     </div>
   </section>
 
@@ -644,9 +646,9 @@ function startB(i){curMap=i;const m=M();bPath=[m.S];bPhase=1;bIn=null;const oc=m
  $('b-howto').innerHTML='<b>遊び方（経路設計ゲーム）</b><br> '+m.S+'（'+m.names[m.S]+'）から '+m.T+'（'+m.names[m.T]+'）へ、続いて '+m.T+' から '+m.X+'（'+m.names[m.X]+'）へ、<b>最安コスト</b>で道をつなぐこと。<b>最安でないと確定しない</b>（最安コストは見出しに表示）。コスト合計は実行フェーズの所要手数になるので、小さいほど有利。<br> 進めるのは<b>線でつながっている地点の間だけ</b>。画面の見た目で近くや斜めにあっても、線がなければ通れない（線の有無がすべて）。線のそばの数字がその道のコスト。同じ地点は2度通らない。間違えたら「1つ戻す」で1手戻れる。<br>侵入路は脱出口（'+m.X+'）を通らない。脱出路は侵入口（'+m.S+'）を通らない。相手フェーズの端点は薄く表示され、選べない。<br>赤いチップ（🧱耐火壁・階違い・通路なし等）のある間は、物理的に通れない場所。'+(m.uncertain?'<br>🧩 コストが「2〜5」のように幅で表示されている道は、状態が未確認（未確定）。下見Aで状態を掴むと確定する。情報なしで賭けることもできる。':'')+(m.timed?'<br>🕐 時間依存コスト： 「偶2／奇5」と表示された橋は、渡り始める時点の累計コストが偶数なら2、奇数なら5かかる（時計の歯車の噛み合い）。道の組み方でタイミングを合わせよう。':'')+(m.locks?'<br>🔑 施錠： 「🔒」の道は施錠されていて、鍵のある地点（🔑）に立ち寄るまで通れない。鍵は脱出路にも引き継がれる。':'');
  renderB();go('scr-b');}
 MAPS[0].plan=$('b-plan').innerHTML;MAPS[0].labels=$('b-labels').innerHTML;MAPS[8].plan=MAPS[2].plan;MAPS[8].labels=MAPS[2].labels;
-function renderB(){const wrap=$('b-nodes');wrap.querySelectorAll('.node').forEach(n=>n.remove());wrap.querySelectorAll('.costchip').forEach(n=>n.remove());wrap.querySelectorAll('.blockchip').forEach(n=>n.remove());
+function renderB(){const wrap=$('b-nodes');const blast=bPath[bPath.length-1];const isNext=k=>{if(k===blast||bPath.includes(k))return false;if(bPhase===1&&k===M().X)return false;if(bPhase===2&&k===M().S)return false;const ek=edgeKey(blast,k);if(!ek)return false;if(edgeLocked(ek))return false;return true;};wrap.querySelectorAll('.node').forEach(n=>n.remove());wrap.querySelectorAll('.costchip').forEach(n=>n.remove());wrap.querySelectorAll('.blockchip').forEach(n=>n.remove());
  const BW=wrap.clientWidth||354;const px=v=>Math.round(v/100*BW);
- for(const k in M().nodes){const d=document.createElement('div');d.className='node'+(bPath.includes(k)?' sel':(bIn&&bIn.includes(k))?' done':(((bPhase===1&&k===M().X)||(bPhase===2&&k===M().S))?' off':''));d.style.left=M().nodes[k][0]+'%';d.style.top=M().nodes[k][1]+'px';d.innerHTML='<b>'+k+'</b><div class="nname">'+M().names[k]+((M().locks&&Object.values(M().locks).some(l=>l.key===k))?' 🔑':'')+'</div>';d.onclick=()=>tapNode(k);wrap.appendChild(d);}
+ for(const k in M().nodes){const d=document.createElement('div');d.className='node'+(bPath.includes(k)?' sel':(bIn&&bIn.includes(k))?' done':(((bPhase===1&&k===M().X)||(bPhase===2&&k===M().S))?' off':''));if(isNext(k))d.classList.add('next');d.style.left=M().nodes[k][0]+'%';d.style.top=M().nodes[k][1]+'px';d.innerHTML='<b>'+k+'</b><div class="nname">'+M().names[k]+((M().locks&&Object.values(M().locks).some(l=>l.key===k))?' 🔑':'')+'</div>';d.onclick=()=>tapNode(k);wrap.appendChild(d);}
  for(const bk of M().blockers){const c=document.createElement('div');c.className='blockchip';c.style.left=bk[2]+'%';c.style.top=bk[3]+'px';c.textContent=bk[1];wrap.appendChild(c);}
  for(const k in M().edges){const c=document.createElement('div');c.className='costchip';c.style.left=M().costPos[k][0]+'%';c.style.top=M().costPos[k][1]+'px';const un=M().uncertain&&M().uncertain[k];const td=M().timed&&M().timed[k];c.textContent=edgeLocked(k)?'🔒'+M().edges[k][0]:td?td.label:(un&&!S.facts[un.fact])?un.label:M().edges[k][0];wrap.appendChild(c);}
  const svg=$('b-svg');let lines='';
@@ -673,7 +675,7 @@ function tapNode(k){const last=bPath[bPath.length-1];if(k===last)return;
  if(k===target){const cost=pathCost(bPath);
   const par=bPhase===1?PAR_IN:PAR_OUT;
   if(cost>par){renderB();$('b-info').innerHTML=`<span class="red">${target} に着いた（コスト ${cost}）。だが最安（${par}）ではないので確定しない。もっと安い道がある。「1つ戻す」で組み直せる。</span>`;return;}
-  if(bPhase===1){bIn=bPath.slice();S.routeIn=bPath.slice();bPhase=2;bPath=[M().T];renderB();$('b-info').innerHTML=`<b class="teal">侵入路が確定した： ${bIn.join(' → ')}（コスト ${cost}）</b>。次は脱出路（${M().T}→${M().X}）。合計コストは侵入＋脱出。`;return;}
+  if(bPhase===1){bIn=bPath.slice();S.routeIn=bPath.slice();bPhase=2;bPath=[M().T];renderB();$('b-info').innerHTML=`<b class="teal">侵入路が確定した： ${bIn.join(' → ')}（コスト ${cost}）</b>。次は脱出路（${M().T}→${M().X}）。<b>地図の上で光っている地点をタップ</b>して、脱出路をつないでください。合計コストは侵入＋脱出。`;$('b-nodes').scrollIntoView({block:'center',behavior:'smooth'});return;}
   else{S.routeOut=bPath.slice();S.bClear=true;S.routeInCost=bIn?routeCost(S.routeIn):0;
    $('b-info').innerHTML=`<b class="teal">✔ 経路設計完了（B クリア）</b> 侵入 ${S.routeIn.join('→')} ／ 脱出 ${S.routeOut.join('→')}`;syncRecon();setTimeout(()=>go('scr-recon'),1000);return;}}
  renderB();}
